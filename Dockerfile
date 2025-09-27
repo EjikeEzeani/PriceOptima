@@ -1,11 +1,15 @@
-# Dockerfile for reproducibility
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 WORKDIR /app
-COPY requirements.txt .
+COPY . /app
+
+# Install system deps
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+
+# Install Python deps
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app
-ENV PYTHONUNBUFFERED=1
+EXPOSE 8501
 
-CMD ["python", "src/run_all.py"]
+# Auto-run new app.py
+CMD ["python", "app.py"]

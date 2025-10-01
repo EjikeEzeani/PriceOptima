@@ -5,11 +5,3 @@ matplotlib
 seaborn
 xgboost
 gym
-scikit-learn
-tensorflow
-torch
-shap
-flask
-gymnasium
-tensorflow
-streamlit

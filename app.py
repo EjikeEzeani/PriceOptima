@@ -1,60 +1,43 @@
-"""
-🚀 Docker Entry Point for MSc Project
-- Runs full ML + RL pipeline automatically
-- Launches Streamlit dashboard on port 8501
-"""
+# app.py
+from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import pandas as pd
+import io
 
-import os
-import yaml
-import gymnasium as gym
-import tensorflow as tf
-from src.envs.supermarket_env import SupermarketEnv
-from src.run_all_menu import evaluate  # reuse your functions
-import subprocess
+app = FastAPI()
 
-# ------------------------------
-# Load Config
-# ------------------------------
-if os.path.exists("config.yaml"):
-    with open("config.yaml", "r") as f:
-        cfg = yaml.safe_load(f)
-    print("✅ Loaded config.yaml")
-else:
-    print("⚠️ config.yaml not found. Using defaults.")
-    cfg = {}
+# Allow frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace "*" with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# ------------------------------
-# Initialize Env
-# ------------------------------
-try:
-    env = SupermarketEnv(
-        base_price=cfg.get("base_prices", {}).get("Lagos", 100),
-        cost=cfg.get("base_prices", {}).get("Lagos", 55),
-        shelf_life=7,
-        inventory=200,
-        elasticity=cfg.get("elasticities", {}).get("Tomatoes", 0.5),
-        demand_func=lambda d: 20*(1+0.05*__import__("math").sin(d/3))
-    )
-    print("✅ Loaded real SupermarketEnv")
-except Exception as e:
-    print(f"⚠️ DummyEnv fallback: {e}")
-    from src.run_all_menu import DummyEnv
-    env = DummyEnv()
+@app.post("/upload-dataset")
+async def upload_dataset(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        df = pd.read_csv(io.BytesIO(contents))
 
-# ------------------------------
-# Quick Evaluation (Baseline)
-# ------------------------------
-print("📊 Running quick evaluation...")
-profits = evaluate(env)
-print(f"Baseline Profit: {sum(profits)/len(profits):.2f}")
+        # Build response
+        summary = {
+            "totalRecords": len(df),
+            "columns": len(df.columns),
+            "columnNames": df.columns.tolist()
+        }
 
-# ------------------------------
-# Launch Streamlit Dashboard
-# ------------------------------
-print("🚀 Launching Streamlit dashboard...")
-subprocess.run([
-    "streamlit", "run", "dashboard.py",
-    "--server.port", "8501",
-    "--server.address", "0.0.0.0"
-])
+        preview = df.head(10).to_dict(orient="records")
 
+        return JSONResponse(content={
+            "summary": summary,
+            "preview": preview
+        })
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"error": str(e)}
+        )

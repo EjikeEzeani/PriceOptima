@@ -15,6 +15,7 @@ export function DebugPanel({ onTestComplete }: DebugPanelProps) {
   const [tests, setTests] = useState<Record<string, any>>({})
   const [isRunning, setIsRunning] = useState(false)
   const [enabled, setEnabled] = useState(false)
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
 
   const runTest = async (testName: string, testFn: () => Promise<any>, timeout = 10000) => {
     try {
@@ -43,14 +44,14 @@ export function DebugPanel({ onTestComplete }: DebugPanelProps) {
       const basicTests = [
         // Test 1: Backend Health Check
         runTest('Backend Health', async () => {
-          const response = await fetch('http://127.0.0.1:8000/health')
+          const response = await fetch(`${API_URL}/health`)
           if (!response.ok) throw new Error(`HTTP ${response.status}`)
           return await response.json()
         }),
 
         // Test 2: CORS Check
         runTest('CORS Check', async () => {
-          const response = await fetch('http://127.0.0.1:8000/health', {
+          const response = await fetch(`${API_URL}/health`, {
             method: 'OPTIONS'
           })
           return { status: response.status, headers: Object.fromEntries(response.headers.entries()) }
@@ -95,7 +96,7 @@ export function DebugPanel({ onTestComplete }: DebugPanelProps) {
     try {
       // Only test backend health - fastest possible test
       await runTest('Backend Health', async () => {
-        const response = await fetch('http://127.0.0.1:8000/health')
+        const response = await fetch(`${API_URL}/health`)
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         return await response.json()
       })

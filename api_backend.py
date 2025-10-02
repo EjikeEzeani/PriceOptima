@@ -17,6 +17,10 @@ from sklearn.model_selection import train_test_split
 import joblib
 import zipfile
 import pandas as pd
+from docx import Document  # type: ignore
+from docx.shared import Inches as DocxInches  # type: ignore
+from pptx import Presentation  # type: ignore
+from pptx.util import Inches, Pt  # type: ignore
 
 app = FastAPI()
 
@@ -76,6 +80,61 @@ EXPORTS_DIR = os.getenv(
     os.path.join(os.path.expanduser("~"), "Documents", "PriceOptima", "exports"),
 )
 os.makedirs(EXPORTS_DIR, exist_ok=True)
+
+
+def _generate_visualizations(df: pd.DataFrame) -> list[str]:
+    """Generate key visualizations and return list of filenames saved in EXPORTS_DIR."""
+    os.makedirs(EXPORTS_DIR, exist_ok=True)
+    saved_files: list[str] = []
+    try:
+        # Category distribution
+        if "Category" in df.columns and len(df) > 0:
+            plt.figure(figsize=(8, 5))
+            df["Category"].value_counts().head(15).plot(kind="bar", color="#1f77b4")
+            plt.title("Category Distribution (Top 15)")
+            plt.xlabel("Category")
+            plt.ylabel("Count")
+            plt.tight_layout()
+            fn = f"category_distribution_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            fp = os.path.join(EXPORTS_DIR, fn)
+            plt.savefig(fp)
+            plt.close()
+            saved_files.append(fn)
+
+        # Sales over time (Revenue)
+        if "Date" in df.columns and "Revenue" in df.columns and len(df.dropna(subset=["Date"])) > 0:
+            ts_df = df.dropna(subset=["Date"]).sort_values("Date")
+            plt.figure(figsize=(8, 4))
+            plt.plot(ts_df["Date"], ts_df["Revenue"], color="#2ca02c")
+            plt.title("Sales Over Time (Revenue)")
+            plt.xlabel("Date")
+            plt.ylabel("Revenue")
+            plt.tight_layout()
+            fn = f"sales_over_time_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            fp = os.path.join(EXPORTS_DIR, fn)
+            plt.savefig(fp)
+            plt.close()
+            saved_files.append(fn)
+
+        # Correlation heatmap
+        num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        if len(num_cols) >= 2:
+            plt.figure(figsize=(6, 5))
+            corr = df[num_cols].corr().fillna(0)
+            sns.heatmap(corr, annot=False, cmap="coolwarm", vmin=-1, vmax=1)
+            plt.title("Correlation Heatmap")
+            plt.tight_layout()
+            fn = f"correlation_heatmap_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            fp = os.path.join(EXPORTS_DIR, fn)
+            plt.savefig(fp)
+            plt.close()
+            saved_files.append(fn)
+    except Exception:
+        try:
+            plt.close()
+        except Exception:
+            pass
+    return saved_files
 
 
 def _normalize_column_name(name: str) -> str:
@@ -539,11 +598,55 @@ async def export_results(request: Request):
                     },
                     "analysis_results": "Analysis completed successfully"
                 }
-                filename = f"summary_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                report_path = os.path.join(EXPORTS_DIR, filename)
-                with open(report_path, 'w') as f:
-                    json.dump(report_data, f, indent=2)
-                exported_files.append(filename)
+                # JSON summary
+                json_filename = f"summary_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                json_path = os.path.join(EXPORTS_DIR, json_filename)
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
+                exported_files.append(json_filename)
+
+                # DOCX report (with visuals and metrics)
+                try:
+                    doc = Document()
+                    doc.add_heading('PriceOptima Executive Summary', 0)
+                    doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    doc.add_heading('Data Summary', level=1)
+                    doc.add_paragraph(f"Total Records: {report_data['data_summary']['total_records']}")
+                    doc.add_paragraph(f"Columns: {', '.join(report_data['data_summary']['columns'])}")
+                    # Insert small preview table (first 10 rows if small)
+                    try:
+                        preview = processed_data.head(5)
+                        table = doc.add_table(rows=1, cols=len(preview.columns))
+                        hdr_cells = table.rows[0].cells
+                        for i, c in enumerate(preview.columns):
+                            hdr_cells[i].text = str(c)
+                        for _, row in preview.iterrows():
+                            cells = table.add_row().cells
+                            for i, c in enumerate(preview.columns):
+                                cells[i].text = str(row.get(c, ""))
+                    except Exception:
+                        pass
+                    doc.add_heading('Key Insights', level=1)
+                    for insight in report_data.get('insights', []):
+                        doc.add_paragraph(insight, style='List Bullet')
+                    doc.add_heading('Recommendations', level=1)
+                    for rec in report_data.get('recommendations', []):
+                        doc.add_paragraph(rec, style='List Bullet')
+                    # Add charts
+                    generated = _generate_visualizations(processed_data)
+                    if generated:
+                        doc.add_heading('Visualizations', level=1)
+                        for img_name in generated:
+                            img_path = os.path.join(EXPORTS_DIR, img_name)
+                            if os.path.exists(img_path):
+                                doc.add_picture(img_path, width=DocxInches(5.5))
+                    docx_filename = f"summary_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+                    docx_path = os.path.join(EXPORTS_DIR, docx_filename)
+                    doc.save(docx_path)
+                    exported_files.append(docx_filename)
+                except Exception:
+                    # If docx generation fails, continue with other exports
+                    pass
             
             elif item == "raw_data":
                 # Export processed dataset
@@ -551,14 +654,20 @@ async def export_results(request: Request):
                 data_path = os.path.join(EXPORTS_DIR, csv_filename)
                 processed_data.to_csv(data_path, index=False)
                 exported_files.append(csv_filename)
-                # Also export Excel
+                # Also export Excel (xlsx)
                 try:
                     xlsx_filename = csv_filename.replace('.csv', '.xlsx')
                     xlsx_path = os.path.join(EXPORTS_DIR, xlsx_filename)
-                    processed_data.to_excel(xlsx_path, index=False)
+                    # Prefer openpyxl engine if available
+                    processed_data.to_excel(xlsx_path, index=False, engine='openpyxl')
                     exported_files.append(xlsx_filename)
                 except Exception:
-                    pass
+                    try:
+                        # Fallback to XlsxWriter
+                        processed_data.to_excel(xlsx_path, index=False, engine='xlsxwriter')
+                        exported_files.append(xlsx_filename)
+                    except Exception:
+                        pass
             
             elif item == "ml_results":
                 # Generate ML results
@@ -578,6 +687,68 @@ async def export_results(request: Request):
                 with open(eda_path, 'w') as f:
                     json.dump(eda_now, f, indent=2, default=str)
                 exported_files.append(eda_filename)
+
+            elif item == "presentation":
+                # Generate a richer PowerPoint presentation with visuals
+                try:
+                    prs = Presentation()
+                    # Title slide
+                    title_slide_layout = prs.slide_layouts[0]
+                    slide = prs.slides.add_slide(title_slide_layout)
+                    slide.shapes.title.text = "PriceOptima Analysis"
+                    slide.placeholders[1].text = f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+
+                    # Summary slide
+                    summary_layout = prs.slide_layouts[1]
+                    s2 = prs.slides.add_slide(summary_layout)
+                    s2.shapes.title.text = "Executive Summary"
+                    body = s2.placeholders[1].text_frame
+                    body.clear()
+                    body.text = "Key Insights"
+                    recs = []
+                    if eda_results_cache:
+                        recs = list(eda_results_cache.get('recommendations', []))
+                    elif 'eda_now' in locals() and isinstance(eda_now, dict):
+                        recs = list(eda_now.get('recommendations', []))
+                    if not recs:
+                        recs = [
+                            "Dynamic pricing improved margins.",
+                            "Reduce waste in perishable categories.",
+                        ]
+                    for rec in recs:
+                        p = body.add_paragraph()
+                        p.text = str(rec)
+                        p.level = 1
+
+                    # Add a charts slide with generated images
+                    imgs = _generate_visualizations(processed_data)
+                    if imgs:
+                        content_layout = prs.slide_layouts[5]  # Title Only
+                        s3 = prs.slides.add_slide(content_layout)
+                        s3.shapes.title.text = "Key Visualizations"
+                        left = Inches(0.5)
+                        top = Inches(1.5)
+                        max_w = Inches(4.5)
+                        cur_left = left
+                        cur_top = top
+                        for idx, img in enumerate(imgs[:4]):
+                            path = os.path.join(EXPORTS_DIR, img)
+                            try:
+                                pic = s3.shapes.add_picture(path, cur_left, cur_top, width=max_w)
+                                if idx % 2 == 1:
+                                    cur_left = left
+                                    cur_top = cur_top + Inches(3)
+                                else:
+                                    cur_left = left + max_w + Inches(0.25)
+                            except Exception:
+                                pass
+
+                    pptx_filename = f"presentation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
+                    pptx_path = os.path.join(EXPORTS_DIR, pptx_filename)
+                    prs.save(pptx_path)
+                    exported_files.append(pptx_filename)
+                except Exception:
+                    pass
         
         return {
             "status": "success", 

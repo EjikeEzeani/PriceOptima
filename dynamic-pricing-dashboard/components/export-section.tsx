@@ -387,6 +387,34 @@ export function ExportSection({ data }: ExportSectionProps) {
                 ))}
               </ul>
               <p className="text-sm">Files are saved in the exports directory and ready for download.</p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {exportResults.files.map((file, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const blob = await downloadFile(file)
+                        const url = window.URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = file
+                        document.body.appendChild(a)
+                        a.click()
+                        a.remove()
+                        window.URL.revokeObjectURL(url)
+                      } catch (e) {
+                        console.error('Download failed', e)
+                        setExportError('Download failed. Please try again or check backend logs.')
+                      }
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {file.split('/').pop()}
+                  </Button>
+                ))}
+              </div>
             </div>
           </AlertDescription>
         </Alert>

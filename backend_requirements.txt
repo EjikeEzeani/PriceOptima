@@ -7,6 +7,12 @@ matplotlib==3.7.2
 seaborn==0.12.2
 python-multipart==0.0.6
 
+# Export dependencies for Word/PowerPoint/Excel
+python-docx==1.1.2
+python-pptx==0.6.23
+openpyxl==3.1.2
+XlsxWriter==3.2.0
+
 
 
 

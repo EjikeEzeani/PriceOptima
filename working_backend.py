@@ -16,6 +16,10 @@ import xgboost as xgb
 import shap
 import joblib
 import logging
+from docx import Document  # type: ignore
+from docx.shared import Inches as DocxInches  # type: ignore
+from pptx import Presentation  # type: ignore
+from pptx.util import Inches, Pt  # type: ignore
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -749,16 +753,69 @@ async def export_results(request: Request):
                     "recommendations": eda_results.get("recommendations", []) if eda_results else []
                 }
                 
+                # JSON summary
                 report_path = f"exports/summary_report_{timestamp}.json"
                 with open(report_path, 'w', encoding='utf-8') as f:
                     json.dump(report_data, f, indent=2, ensure_ascii=False)
                 exported_files.append(os.path.basename(report_path))
+
+                # DOCX executive summary with preview table and visuals
+                try:
+                    doc = Document()
+                    doc.add_heading('PriceOptima Executive Summary', 0)
+                    doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    doc.add_heading('Data Summary', level=1)
+                    doc.add_paragraph(f"Total Records: {report_data['data_summary']['total_records']}")
+                    doc.add_paragraph(f"Columns: {', '.join(report_data['data_summary']['columns'])}")
+                    try:
+                        preview = uploaded_data.head(5)
+                        table = doc.add_table(rows=1, cols=len(preview.columns))
+                        hdr_cells = table.rows[0].cells
+                        for i, c in enumerate(preview.columns):
+                            hdr_cells[i].text = str(c)
+                        for _, row in preview.iterrows():
+                            cells = table.add_row().cells
+                            for i, c in enumerate(preview.columns):
+                                cells[i].text = str(row.get(c, ""))
+                    except Exception:
+                        pass
+                    doc.add_heading('Key Insights', level=1)
+                    for insight in eda_results.get('insights', []) if eda_results else []:
+                        doc.add_paragraph(str(insight), style='List Bullet')
+                    doc.add_heading('Recommendations', level=1)
+                    for rec in eda_results.get('recommendations', []) if eda_results else []:
+                        doc.add_paragraph(str(rec), style='List Bullet')
+                    # Attempt to add existing visualization files if present
+                    for name in os.listdir('exports') if os.path.exists('exports') else []:
+                        if name.endswith('.png') and any(k in name for k in ['distribution','time','heatmap']):
+                            try:
+                                doc.add_picture(os.path.join('exports', name), width=DocxInches(5.5))
+                            except Exception:
+                                pass
+                    docx_path = f"exports/summary_report_{timestamp}.docx"
+                    doc.save(docx_path)
+                    exported_files.append(os.path.basename(docx_path))
+                except Exception:
+                    pass
                 
             elif item == "raw_data":
                 # Export processed data
                 data_path = f"exports/processed_data_{timestamp}.csv"
                 uploaded_data.to_csv(data_path, index=False)
                 exported_files.append(os.path.basename(data_path))
+
+                # Also export Excel (xlsx)
+                try:
+                    xlsx_path = f"exports/processed_data_{timestamp}.xlsx"
+                    # Prefer openpyxl engine if available
+                    uploaded_data.to_excel(xlsx_path, index=False, engine='openpyxl')
+                    exported_files.append(os.path.basename(xlsx_path))
+                except Exception:
+                    try:
+                        uploaded_data.to_excel(xlsx_path, index=False, engine='xlsxwriter')
+                        exported_files.append(os.path.basename(xlsx_path))
+                    except Exception:
+                        pass
                 
             elif item == "eda_analysis":
                 # Export EDA results
@@ -784,6 +841,83 @@ async def export_results(request: Request):
                     with open(rl_path, 'w', encoding='utf-8') as f:
                         json.dump(rl_results, f, indent=2, ensure_ascii=False)
                     exported_files.append(os.path.basename(rl_path))
+
+            elif item == "presentation":
+                # Generate a richer PowerPoint deck with key points and any existing visuals
+                try:
+                    prs = Presentation()
+                    title_layout = prs.slide_layouts[0]
+                    slide = prs.slides.add_slide(title_layout)
+                    slide.shapes.title.text = "PriceOptima Analysis"
+                    slide.placeholders[1].text = f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+
+                    bullet_layout = prs.slide_layouts[1]
+                    slide2 = prs.slides.add_slide(bullet_layout)
+                    slide2.shapes.title.text = "Executive Summary"
+                    tf = slide2.placeholders[1].text_frame
+                    tf.clear()
+                    tf.text = "Key Insights"
+                    for rec in (eda_results.get('recommendations', []) if eda_results else [
+                        "Dynamic pricing improved margins.",
+                        "Reduce waste in perishable categories.",
+                    ]):
+                        p = tf.add_paragraph()
+                        p.text = str(rec)
+                        p.level = 1
+
+                    # Add images if any exist in exports
+                    imgs = [n for n in (os.listdir('exports') if os.path.exists('exports') else []) if n.endswith('.png')]
+                    if imgs:
+                        layout = prs.slide_layouts[5]
+                        s3 = prs.slides.add_slide(layout)
+                        s3.shapes.title.text = "Key Visualizations"
+                        left = Inches(0.5)
+                        top = Inches(1.5)
+                        max_w = Inches(4.5)
+                        cur_left = left
+                        cur_top = top
+                        for idx, img in enumerate(imgs[:4]):
+                            try:
+                                path = os.path.join('exports', img)
+                                s3.shapes.add_picture(path, cur_left, cur_top, width=max_w)
+                                if idx % 2 == 1:
+                                    cur_left = left
+                                    cur_top = cur_top + Inches(3)
+                                else:
+                                    cur_left = left + max_w + Inches(0.25)
+                            except Exception:
+                                pass
+
+                    pptx_path = f"exports/presentation_{timestamp}.pptx"
+                    prs.save(pptx_path)
+                    exported_files.append(os.path.basename(pptx_path))
+                except Exception:
+                    pass
+
+            elif item == "technical_report":
+                # Generate a technical report (DOCX)
+                try:
+                    doc = Document()
+                    doc.add_heading('PriceOptima Technical Report', 0)
+                    doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    doc.add_heading('Dataset', level=1)
+                    doc.add_paragraph(f"Records: {len(uploaded_data)}")
+                    doc.add_paragraph(f"Columns: {', '.join(list(uploaded_data.columns))}")
+                    doc.add_heading('EDA Summary', level=1)
+                    if eda_results:
+                        doc.add_paragraph(f"Outliers: {list(eda_results.get('outliers', {}).keys())}")
+                        for k, v in (eda_results.get('correlations', {}) or {}).items():
+                            doc.add_paragraph(f"Correlation {k}: {v}")
+                    doc.add_heading('ML Models', level=1)
+                    if ml_models:
+                        for name, res in ml_models.items():
+                            metrics = res.get('metrics', {}) if isinstance(res, dict) else {}
+                            doc.add_paragraph(f"Model {name}: R2={metrics.get('r2')}, RMSE={metrics.get('rmse')}, MAE={metrics.get('mae')}")
+                    tech_docx_path = f"exports/technical_report_{timestamp}.docx"
+                    doc.save(tech_docx_path)
+                    exported_files.append(os.path.basename(tech_docx_path))
+                except Exception:
+                    pass
         
         logger.info(f"Export completed - {len(exported_files)} files generated")
         

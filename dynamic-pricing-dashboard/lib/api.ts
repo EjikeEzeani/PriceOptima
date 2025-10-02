@@ -4,7 +4,10 @@
  */
 
 // Prefer loopback IP to avoid IPv6/host resolution edge cases on Windows
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+// Use Next.js proxy (`/api`) by default in the browser to avoid CORS during local dev
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== 'undefined' ? '/api' : 'http://127.0.0.1:8000');
 
 export interface UploadResponse {
   files: Array<{

@@ -1,0 +1,258 @@
+{
+  "test_summary": {
+    "total_tests": 15,
+    "passed": 15,
+    "failed": 0,
+    "timestamp": "2025-10-02T03:11:15.471792"
+  },
+  "test_results": {
+    "Backend Health Check": {
+      "status": "PASS",
+      "details": "Backend is running",
+      "timestamp": "2025-10-02T03:10:53.650646"
+    },
+    "Dataset Load: merged_input_dataset.csv": {
+      "status": "PASS",
+      "details": "Shape: (1000, 6), Columns: 6",
+      "timestamp": "2025-10-02T03:10:53.687380"
+    },
+    "Dataset Load: eda_descriptive.csv": {
+      "status": "PASS",
+      "details": "Shape: (8, 6), Columns: 6",
+      "timestamp": "2025-10-02T03:10:53.710043"
+    },
+    "Dataset Load: model_comparison.csv": {
+      "status": "PASS",
+      "details": "Shape: (3, 5), Columns: 5",
+      "timestamp": "2025-10-02T03:10:53.732093"
+    },
+    "Dataset Load: wfp_food_prices_nga.csv": {
+      "status": "PASS",
+      "details": "Shape: (80776, 16), Columns: 16",
+      "timestamp": "2025-10-02T03:10:54.230290"
+    },
+    "Data Upload": {
+      "status": "PASS",
+      "details": "Records: 100",
+      "timestamp": "2025-10-02T03:10:56.316978"
+    },
+    "EDA Analysis": {
+      "status": "PASS",
+      "details": "Categories: 1",
+      "timestamp": "2025-10-02T03:10:58.396102"
+    },
+    "ML Algorithm: LINEAR": {
+      "status": "PASS",
+      "details": "R2: 0.891, RMSE: 7406.249",
+      "timestamp": "2025-10-02T03:11:00.470286"
+    },
+    "ML Algorithm: RF": {
+      "status": "PASS",
+      "details": "R2: 0.997, RMSE: 1207.964",
+      "timestamp": "2025-10-02T03:11:02.703663"
+    },
+    "ML Algorithm: XGBOOST": {
+      "status": "PASS",
+      "details": "R2: 0.997, RMSE: 1207.964",
+      "timestamp": "2025-10-02T03:11:05.010567"
+    },
+    "RL Algorithm: QLEARNING": {
+      "status": "PASS",
+      "details": "Waste Reduction: 23.5%",
+      "timestamp": "2025-10-02T03:11:07.071366"
+    },
+    "RL Algorithm: DQN": {
+      "status": "PASS",
+      "details": "Waste Reduction: 23.5%",
+      "timestamp": "2025-10-02T03:11:09.134658"
+    },
+    "Report Generation: summary_report": {
+      "status": "PASS",
+      "details": "Files: 1",
+      "timestamp": "2025-10-02T03:11:11.170290"
+    },
+    "Report Generation: raw_data": {
+      "status": "PASS",
+      "details": "Files: 1",
+      "timestamp": "2025-10-02T03:11:13.205674"
+    },
+    "Report Generation: ml_results": {
+      "status": "PASS",
+      "details": "Files: 1",
+      "timestamp": "2025-10-02T03:11:15.471548"
+    }
+  },
+  "algorithm_performance": {
+    "linear": {
+      "r2": 0.8907744477888955,
+      "rmse": 7406.248934087236,
+      "mae": 5483.317561147218,
+      "status": "PASS"
+    },
+    "rf": {
+      "r2": 0.9970944036539525,
+      "rmse": 1207.9635256716153,
+      "mae": 835.7681,
+      "status": "PASS"
+    },
+    "xgboost": {
+      "r2": 0.9970944036539525,
+      "rmse": 1207.9635256716153,
+      "mae": 835.7681,
+      "status": "PASS"
+    }
+  },
+  "dataset_analysis": {
+    "data/processed/merged_input_dataset.csv": {
+      "data": "           date     store commodity  price  quantity  revenue\n0    2022-01-01      Spar  Tomatoes  287.0      22.0   6314.0\n1    2022-01-02  Shoprite  Tomatoes  405.0     146.0  59130.0\n2    2022-01-03      Spar  Tomatoes  222.0     173.0  38406.0\n3    2022-01-04      Spar  Tomatoes  441.0      95.0  41895.0\n4    2022-01-05  Shoprite      Rice  270.0      99.0  26730.0\n..          ...       ...       ...    ...       ...      ...\n995  2024-09-22  Justrite      Rice  268.0     111.0  29748.0\n996  2024-09-23  Justrite  Tomatoes  460.0      84.0  38640.0\n997  2024-09-24      Spar     Beans  115.0     108.0  12420.0\n998  2024-09-25      Spar  Tomatoes  474.0      81.0  38394.0\n999  2024-09-26  Shoprite  Tomatoes  161.0      12.0   1932.0\n\n[1000 rows x 6 columns]",
+      "shape": [
+        1000,
+        6
+      ],
+      "columns": [
+        "date",
+        "store",
+        "commodity",
+        "price",
+        "quantity",
+        "revenue"
+      ],
+      "dtypes": {
+        "date": "object",
+        "store": "object",
+        "commodity": "object",
+        "price": "float64",
+        "quantity": "float64",
+        "revenue": "float64"
+      },
+      "null_counts": {
+        "date": 0,
+        "store": 0,
+        "commodity": 0,
+        "price": 0,
+        "quantity": 0,
+        "revenue": 0
+      }
+    },
+    "data/processed/eda_descriptive.csv": {
+      "data": "  Unnamed: 0        Beans        Maize       Onions         Rice     Tomatoes\n0      count  1077.000000  1076.000000  1051.000000  1070.000000  1081.000000\n1       mean   277.611235   305.094247   313.166422   289.558243   316.297475\n2        std    43.267395    51.763858    74.632351    61.255015    72.084034\n3        min   200.660000   219.290000   185.900000   194.340000   184.700000\n4        25%   235.950000   262.770000   248.970000   235.720000   265.340000\n5        50%   282.030000   302.215000   302.110000   279.620000   298.270000\n6        75%   312.190000   341.450000   389.280000   345.470000   384.960000\n7        max   351.260000   402.850000   439.300000   396.320000   435.210000",
+      "shape": [
+        8,
+        6
+      ],
+      "columns": [
+        "Unnamed: 0",
+        "Beans",
+        "Maize",
+        "Onions",
+        "Rice",
+        "Tomatoes"
+      ],
+      "dtypes": {
+        "Unnamed: 0": "object",
+        "Beans": "float64",
+        "Maize": "float64",
+        "Onions": "float64",
+        "Rice": "float64",
+        "Tomatoes": "float64"
+      },
+      "null_counts": {
+        "Unnamed: 0": 0,
+        "Beans": 0,
+        "Maize": 0,
+        "Onions": 0,
+        "Rice": 0,
+        "Tomatoes": 0
+      }
+    },
+    "data/processed/model_comparison.csv": {
+      "data": "              model      RMSE       MAE        R2      MAPE\n0  LinearRegression  5.370803  1.956829  0.992273  0.657400\n1      RandomForest  5.686244  2.400823  0.991339  0.773040\n2           XGBoost  3.817094  1.742625  0.996097  0.567779",
+      "shape": [
+        3,
+        5
+      ],
+      "columns": [
+        "model",
+        "RMSE",
+        "MAE",
+        "R2",
+        "MAPE"
+      ],
+      "dtypes": {
+        "model": "object",
+        "RMSE": "float64",
+        "MAE": "float64",
+        "R2": "float64",
+        "MAPE": "float64"
+      },
+      "null_counts": {
+        "model": 0,
+        "RMSE": 0,
+        "MAE": 0,
+        "R2": 0,
+        "MAPE": 0
+      }
+    },
+    "data/raw/wfp_food_prices_nga.csv": {
+      "data": "             date      admin1      admin2  ...        currency   price    usdprice\n0           #date  #adm1+name  #adm2+name  ...  #currency+code  #value  #value+usd\n1      2002-01-15     Katsina       Jibia  ...             NGN  175.92        1.54\n2      2002-01-15     Katsina       Jibia  ...             NGN  150.18        1.31\n3      2002-01-15     Katsina       Jibia  ...             NGN   358.7        3.14\n4      2002-01-15     Katsina       Jibia  ...             NGN  155.61        1.36\n...           ...         ...         ...  ...             ...     ...         ...\n80771  2025-08-15        Yobe      Geidam  ...             NGN  1000.0        0.65\n80772  2025-08-15        Yobe      Geidam  ...             NGN   700.0        0.46\n80773  2025-08-15        Yobe      Geidam  ...             NGN   600.0        0.39\n80774  2025-08-15        Yobe      Geidam  ...             NGN   200.0        0.13\n80775  2025-08-15        Yobe      Geidam  ...             NGN   700.0        0.46\n\n[80776 rows x 16 columns]",
+      "shape": [
+        80776,
+        16
+      ],
+      "columns": [
+        "date",
+        "admin1",
+        "admin2",
+        "market",
+        "market_id",
+        "latitude",
+        "longitude",
+        "category",
+        "commodity",
+        "commodity_id",
+        "unit",
+        "priceflag",
+        "pricetype",
+        "currency",
+        "price",
+        "usdprice"
+      ],
+      "dtypes": {
+        "date": "object",
+        "admin1": "object",
+        "admin2": "object",
+        "market": "object",
+        "market_id": "object",
+        "latitude": "object",
+        "longitude": "object",
+        "category": "object",
+        "commodity": "object",
+        "commodity_id": "object",
+        "unit": "object",
+        "priceflag": "object",
+        "pricetype": "object",
+        "currency": "object",
+        "price": "object",
+        "usdprice": "object"
+      },
+      "null_counts": {
+        "date": 0,
+        "admin1": 0,
+        "admin2": 0,
+        "market": 0,
+        "market_id": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "category": 0,
+        "commodity": 0,
+        "commodity_id": 0,
+        "unit": 0,
+        "priceflag": 0,
+        "pricetype": 0,
+        "currency": 0,
+        "price": 0,
+        "usdprice": 0
+      }
+    }
+  }
+}

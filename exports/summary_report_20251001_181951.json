@@ -1,0 +1,77 @@
+{
+  "export_timestamp": "2025-10-01T18:19:51.808617",
+  "data_summary": {
+    "total_records": 2,
+    "columns": [
+      "date",
+      "product",
+      "price",
+      "quantity",
+      "revenue"
+    ],
+    "data_types": {
+      "date": "object",
+      "product": "object",
+      "price": "float64",
+      "quantity": "int64",
+      "revenue": "int64"
+    }
+  },
+  "eda_results": {
+    "overview": {
+      "category_distribution": {
+        "Tomatoes": 1,
+        "Onions": 1
+      },
+      "revenue_vs_waste": {
+        "revenue": [
+          125,
+          135
+        ],
+        "waste": [
+          50,
+          75
+        ]
+      }
+    },
+    "trends": {
+      "sales_over_time": [
+        125,
+        135
+      ]
+    },
+    "correlations": {
+      "price_quantity": -1.0,
+      "price_revenue": -1.0
+    },
+    "insights": [
+      "Average price: $2.15 (±$0.49)",
+      "Total revenue: $260.00 (avg: $130.00)",
+      "Total quantity sold: 125 units (avg: 62.5)",
+      "Strong negative correlation between price and quantity - price sensitivity detected",
+      "Top performing category: Tomatoes (1 items)"
+    ],
+    "recommendations": [
+      "Price stability is good - maintain current pricing strategy",
+      "Revenue growth potential - focus on sales optimization",
+      "Moderate volume - focus on demand generation",
+      "Consider price optimization to balance volume and margin",
+      "Focus marketing efforts on Tomatoes category"
+    ],
+    "summary_stats": {
+      "total_records": 2,
+      "numeric_columns": 3,
+      "categorical_columns": 2,
+      "data_quality": "Limited"
+    }
+  },
+  "ml_models": "Not available",
+  "rl_results": "Not available",
+  "recommendations": [
+    "Price stability is good - maintain current pricing strategy",
+    "Revenue growth potential - focus on sales optimization",
+    "Moderate volume - focus on demand generation",
+    "Consider price optimization to balance volume and margin",
+    "Focus marketing efforts on Tomatoes category"
+  ]
+}

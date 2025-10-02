@@ -23,3 +23,6 @@ figures/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Next.js build output
+/.next/

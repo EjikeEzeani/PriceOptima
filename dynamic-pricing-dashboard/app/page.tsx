@@ -30,9 +30,11 @@ import { RLSection } from "@/components/rl-section"
 import { DashboardSection } from "@/components/dashboard-section"
 import { ExportSection } from "@/components/export-section"
 import { AnalyticsDashboard } from "@/components/analytics-dashboard"
+import { DebugPanel } from "@/components/debug-panel"
 
 const tabs = [
   { id: "upload", label: "Upload Data", icon: Upload, description: "Upload your sales data files" },
+  { id: "debug", label: "Debug Panel", icon: Shield, description: "Test application components" },
   { id: "eda", label: "Data Analysis", icon: BarChart3, description: "Explore your data insights" },
   { id: "ml", label: "AI Predictions", icon: Brain, description: "Machine Learning Forecasts" },
   { id: "rl", label: "Price Optimization", icon: Zap, description: "Smart Pricing Engine" },
@@ -137,9 +139,15 @@ export default function HomePage() {
   const [showAnalytics, setShowAnalytics] = useState(false)
 
   const renderTabContent = () => {
+    console.log('Rendering tab content:', { activeTab, uploadedData: uploadedData ? 'Data available' : 'No data' })
     switch (activeTab) {
       case "upload":
-        return <UploadSection onDataUploaded={setUploadedData} />
+        return <UploadSection onDataUploaded={(data) => {
+          console.log('Data uploaded, setting state:', data)
+          setUploadedData(data)
+        }} />
+      case "debug":
+        return <DebugPanel onTestComplete={(results) => console.log('Debug results:', results)} />
       case "eda":
         return <EDASection data={uploadedData} />
       case "ml":

@@ -1,0 +1,15 @@
+{
+  "export_timestamp": "2025-10-01T18:19:07.917437",
+  "data_summary": {
+    "total_records": 100,
+    "columns": [
+      "date",
+      "product",
+      "category",
+      "price",
+      "quantity",
+      "revenue",
+      "waste"
+    ],
+    "data_types": {
+      "date": 

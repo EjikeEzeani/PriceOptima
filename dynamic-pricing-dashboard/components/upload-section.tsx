@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { uploadData, type UploadResponse } from "@/lib/api"
 
 interface UploadSectionProps {
   onDataUploaded: (data: any) => void
@@ -21,37 +22,7 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
   const [success, setSuccess] = useState(false)
   const [dataPreview, setDataPreview] = useState<any>(null)
 
-  // Parse CSV file content
-  const parseCSV = (content: string) => {
-    const lines = content.split("\n").filter((line) => line.trim())
-    if (lines.length < 2) throw new Error("File must contain at least a header row and one data row")
-
-    const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""))
-    const rows = lines.slice(1).map((line) => {
-      const values = line.split(",").map((v) => v.trim().replace(/"/g, ""))
-      const row: any = {}
-      headers.forEach((header, index) => {
-        row[header] = values[index] || ""
-      })
-      return row
-    })
-
-    return { headers, rows }
-  }
-
-  // Validate required columns
-  const validateData = (headers: string[]) => {
-    const requiredColumns = ["date", "product", "category", "price", "quantity", "revenue"]
-    const normalizedHeaders = headers.map((h) => h.toLowerCase().replace(/[^a-z]/g, ""))
-
-    const missingColumns = requiredColumns.filter((col) => !normalizedHeaders.some((header) => header.includes(col)))
-
-    if (missingColumns.length > 0) {
-      throw new Error(
-        `Missing required columns: ${missingColumns.join(", ")}. Please ensure your data includes: Date, Product Name, Category, Price, Quantity Sold, Revenue`,
-      )
-    }
-  }
+  // Client-side validation removed - backend handles all processing for better performance
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null)
@@ -106,63 +77,45 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
     setError(null)
 
     try {
-      // Process first file (for demo, we'll focus on CSV)
+      // Process first file
       const file = uploadedFiles[0]
 
       if (!file.name.endsWith(".csv")) {
         throw new Error("For this demo, please upload a CSV file. Excel support coming soon!")
       }
 
-      // Read file content
-      const content = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = (e) => resolve(e.target?.result as string)
-        reader.onerror = () => reject(new Error("Failed to read file"))
-        reader.readAsText(file)
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 15, 85))
+      }, 200)
+
+      console.log('Starting file upload...', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
       })
 
-      setUploadProgress(30)
+      // Upload file directly to backend - no client-side processing
+      const processedData: UploadResponse = await uploadData(file)
+      
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+      
+      console.log('Upload Results:', processedData)
+      console.log('Preview data:', processedData.preview)
+      console.log('Headers:', processedData.headers)
+      console.log('Summary:', processedData.summary)
 
-      // Parse CSV
-      const { headers, rows } = parseCSV(content)
-      setUploadProgress(60)
-
-      // Validate data structure
-      validateData(headers)
-      setUploadProgress(80)
-
-      // Generate data summary and insights
-      const processedData = {
-        files: uploadedFiles.map((file) => ({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-        })),
-        headers,
-        rows: rows.slice(0, 1000), // Limit to first 1000 rows for performance
-        summary: {
-          totalRecords: rows.length,
-          dateRange: `${rows[0]?.date || "N/A"} to ${rows[rows.length - 1]?.date || "N/A"}`,
-          products: new Set(rows.map((r) => r.product || r.Product || r["Product Name"])).size,
-          categories: new Set(rows.map((r) => r.category || r.Category)).size,
-          totalRevenue: rows.reduce((sum, row) => {
-            const revenue = Number.parseFloat(row.revenue || row.Revenue || "0")
-            return sum + (isNaN(revenue) ? 0 : revenue)
-          }, 0),
-          avgPrice:
-            rows.reduce((sum, row) => {
-              const price = Number.parseFloat(row.price || row.Price || "0")
-              return sum + (isNaN(price) ? 0 : price)
-            }, 0) / rows.length,
-        },
-        preview: rows.slice(0, 5), // First 5 rows for preview
+      // Validate the response
+      if (!processedData || !processedData.preview || !processedData.headers) {
+        throw new Error("Invalid response from server. Please try again.")
       }
 
-      setUploadProgress(100)
       setDataPreview(processedData)
       onDataUploaded(processedData)
       setSuccess(true)
     } catch (err: any) {
+      console.error('Upload error:', err)
       setError(err.message || "Failed to process files. Please check your data format and try again.")
     } finally {
       setIsProcessing(false)
@@ -315,50 +268,69 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-3 bg-primary/10 rounded-lg">
-                <p className="text-2xl font-bold text-primary">{dataPreview.summary.totalRecords.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">Total Records</p>
+              <div className="text-center p-4 metric-card-1 rounded-lg">
+                <p className="metric-value high-contrast-text">{dataPreview.summary?.totalRecords?.toLocaleString() || '0'}</p>
+                <p className="metric-label high-contrast-label">Total Records</p>
               </div>
-              <div className="text-center p-3 bg-chart-2/10 rounded-lg">
-                <p className="text-2xl font-bold text-chart-2">{dataPreview.summary.products}</p>
-                <p className="text-sm text-muted-foreground">Unique Products</p>
+              <div className="text-center p-4 metric-card-2 rounded-lg">
+                <p className="metric-value high-contrast-text">{dataPreview.summary?.products || '0'}</p>
+                <p className="metric-label high-contrast-label">Unique Products</p>
               </div>
-              <div className="text-center p-3 bg-chart-3/10 rounded-lg">
-                <p className="text-2xl font-bold text-chart-3">{dataPreview.summary.categories}</p>
-                <p className="text-sm text-muted-foreground">Categories</p>
+              <div className="text-center p-4 metric-card-3 rounded-lg">
+                <p className="metric-value high-contrast-text">{dataPreview.summary?.categories || '0'}</p>
+                <p className="metric-label high-contrast-label">Categories</p>
               </div>
-              <div className="text-center p-3 bg-chart-4/10 rounded-lg">
-                <p className="text-2xl font-bold text-chart-4">₦{dataPreview.summary.totalRevenue.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
+              <div className="text-center p-4 metric-card-4 rounded-lg">
+                <p className="metric-value high-contrast-text analytics-text">₦{dataPreview.summary?.totalRevenue?.toLocaleString() || '0'}</p>
+                <p className="metric-label high-contrast-label">Total Revenue</p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-medium text-foreground">Sample Data (First 5 Rows):</h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-foreground">Sample Data (First 5 Rows):</h4>
+                <Badge variant="secondary" className="text-xs">
+                  {dataPreview.totalRows || dataPreview.preview?.length || 0} total records
+                </Badge>
+              </div>
+              <div className="overflow-x-auto border border-border rounded-lg">
+                <table className="data-preview-table w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      {dataPreview.headers.slice(0, 6).map((header: string, index: number) => (
-                        <th key={index} className="text-left p-2 font-medium text-muted-foreground">
+                    <tr>
+                      {(dataPreview.headers || []).slice(0, 6).map((header: string, index: number) => (
+                        <th key={index} className="text-left p-3">
                           {header}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {dataPreview.preview.map((row: any, index: number) => (
-                      <tr key={index} className="border-b border-border/50">
-                        {dataPreview.headers.slice(0, 6).map((header: string, cellIndex: number) => (
-                          <td key={cellIndex} className="p-2 text-foreground">
-                            {row[header] || "N/A"}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    {(dataPreview.preview || []).map((row: any, index: number) => {
+                      return (
+                        <tr key={index}>
+                          {(dataPreview.headers || []).slice(0, 6).map((header: string, cellIndex: number) => {
+                            const value = row?.[header];
+                            return (
+                              <td key={cellIndex} className="analytics-text">
+                                {(() => {
+                                  if (value === null || value === undefined) return "N/A";
+                                  if (typeof value === 'object') return JSON.stringify(value);
+                                  return String(value);
+                                })()}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+              {dataPreview.totalRows > 5 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Showing first 5 rows of {dataPreview.totalRows} total records
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

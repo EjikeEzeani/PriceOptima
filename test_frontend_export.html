@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend Export</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Export Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Backend Health</h3>
+        <button onclick="testHealth()">Test Health</button>
+        <div id="health-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Export API</h3>
+        <button onclick="testExport()">Test Export</button>
+        <div id="export-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Download</h3>
+        <button onclick="testDownload()">Test Download</button>
+        <div id="download-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<div class="success">✅ Health check passed: ${JSON.stringify(data)}</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Health check failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testExport() {
+            const resultDiv = document.getElementById('export-result');
+            try {
+                const response = await fetch(`${API_BASE}/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: ['summary_report', 'raw_data', 'ml_results']
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Export successful!<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Export failed: ${JSON.stringify(data)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Export test failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDownload() {
+            const resultDiv = document.getElementById('download-result');
+            try {
+                // First get the list of files from exports directory
+                const exportResponse = await fetch(`${API_BASE}/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: ['summary_report']
+                    })
+                });
+                
+                const exportData = await exportResponse.json();
+                
+                if (exportData.files && exportData.files.length > 0) {
+                    const filename = exportData.files[0].split('/').pop();
+                    const downloadUrl = `${API_BASE}/download/${filename}`;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Download test ready!<br>
+                            <a href="${downloadUrl}" target="_blank">Download: ${filename}</a><br>
+                            <small>Generated files: ${exportData.files.join(', ')}</small>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ No files available for download</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Download test failed: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

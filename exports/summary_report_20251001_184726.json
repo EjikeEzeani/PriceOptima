@@ -1,0 +1,160 @@
+{
+  "export_timestamp": "2025-10-01T18:47:26.899967",
+  "data_summary": {
+    "total_records": 100,
+    "columns": [
+      "date",
+      "product",
+      "category",
+      "price",
+      "quantity",
+      "revenue",
+      "waste"
+    ],
+    "data_types": {
+      "date": "object",
+      "product": "object",
+      "category": "object",
+      "price": "float64",
+      "quantity": "int64",
+      "revenue": "int64",
+      "waste": "int64"
+    }
+  },
+  "eda_results": {
+    "overview": {
+      "category_distribution": {
+        "Tomatoes": 25,
+        "Onions": 25,
+        "Peppers": 25,
+        "Carrots": 25
+      },
+      "revenue_vs_waste": {
+        "revenue": [
+          125,
+          135,
+          96,
+          126,
+          125,
+          135,
+          96,
+          126,
+          125,
+          135,
+          96,
+          126,
+          125,
+          135,
+          96,
+          126,
+          125,
+          135,
+          96,
+          126
+        ],
+        "waste": [
+          5,
+          8,
+          3,
+          6,
+          5,
+          8,
+          3,
+          6,
+          5,
+          8,
+          3,
+          6,
+          5,
+          8,
+          3,
+          6,
+          5,
+          8,
+          3,
+          6
+        ]
+      }
+    },
+    "trends": {
+      "sales_over_time": [
+        125,
+        135,
+        96,
+        126,
+        125,
+        135,
+        96,
+        126,
+        125,
+        135,
+        96,
+        126,
+        125,
+        135,
+        96,
+        126,
+        125,
+        135,
+        96,
+        126,
+        125,
+        135,
+        96,
+        126,
+        125,
+        135,
+        96,
+        126,
+        125,
+        135
+      ]
+    },
+    "correlations": {
+      "price_quantity": -0.9916182489888956,
+      "price_revenue": -0.9585705843593514
+    },
+    "insights": [
+      "Average price: $2.40 (±$0.53)",
+      "Total revenue: $12,050.00 (avg: $120.50)",
+      "Total quantity sold: 5,375 units (avg: 53.8)",
+      "Strong negative correlation between price and quantity - price sensitivity detected",
+      "Top performing category: Tomatoes (25 items)"
+    ],
+    "recommendations": [
+      "Price stability is good - maintain current pricing strategy",
+      "Strong revenue performance - consider expansion opportunities",
+      "Moderate volume - focus on demand generation",
+      "Consider price optimization to balance volume and margin",
+      "Focus marketing efforts on Tomatoes category"
+    ],
+    "summary_stats": {
+      "total_records": 100,
+      "numeric_columns": 4,
+      "categorical_columns": 3,
+      "data_quality": "Limited"
+    }
+  },
+  "ml_models": {
+    "random_forest": {
+      "r2": 1.0,
+      "rmse": 0.0,
+      "mae": 0.0
+    },
+    "linear_regression": {
+      "r2": 1.0,
+      "rmse": 1.538370149106851e-15,
+      "mae": 1.3322676295501878e-15
+    }
+  },
+  "rl_results": {
+    "dqn": 148.87794674506108
+  },
+  "recommendations": [
+    "Price stability is good - maintain current pricing strategy",
+    "Strong revenue performance - consider expansion opportunities",
+    "Moderate volume - focus on demand generation",
+    "Consider price optimization to balance volume and margin",
+    "Focus marketing efforts on Tomatoes category"
+  ]
+}

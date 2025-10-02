@@ -15,8 +15,10 @@ import {
   Presentation,
   CheckCircle,
   Package,
+  AlertCircle,
 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { exportReports, downloadFile, type ExportResponse } from "@/lib/api"
 
 interface ExportSectionProps {
   data: any
@@ -93,6 +95,8 @@ export function ExportSection({ data }: ExportSectionProps) {
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [exportComplete, setExportComplete] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [exportResults, setExportResults] = useState<ExportResponse | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const categories = [
@@ -132,15 +136,43 @@ export function ExportSection({ data }: ExportSectionProps) {
     setIsExporting(true)
     setExportProgress(0)
     setExportComplete(false)
+    setExportError(null)
+    setExportResults(null)
 
-    // Simulate export progress
-    for (let i = 0; i <= 100; i += 5) {
-      setExportProgress(i)
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    try {
+      console.log('Starting export with items:', selectedItems)
+      
+      // Test backend connection first
+      const healthCheck = await fetch('http://localhost:8000/health')
+      if (!healthCheck.ok) {
+        throw new Error('Backend server is not responding. Please ensure the backend is running on port 8000.')
+      }
+
+      // Simulate export progress
+      for (let i = 0; i <= 100; i += 5) {
+        setExportProgress(i)
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+
+      // Call backend export API using centralized client
+      const results: ExportResponse = await exportReports(selectedItems)
+      console.log('Export Results:', results)
+      
+      // Validate results
+      if (!results || !results.files || results.files.length === 0) {
+        throw new Error('Export completed but no files were generated. Please try again.')
+      }
+      
+      setExportResults(results)
+      setExportComplete(true)
+      console.log('Export completed successfully')
+    } catch (error: any) {
+      console.error('Error exporting:', error)
+      setExportError(error.message || 'Export failed. Please check your connection and try again.')
+      setExportComplete(false)
+    } finally {
+      setIsExporting(false)
     }
-
-    setExportComplete(true)
-    setIsExporting(false)
   }
 
   const getTotalSize = () => {
@@ -154,17 +186,7 @@ export function ExportSection({ data }: ExportSectionProps) {
       .toFixed(1)
   }
 
-  if (!data) {
-    return (
-      <div className="text-center py-12">
-        <Download className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-foreground mb-2">No Results to Export</h3>
-        <p className="text-muted-foreground mb-4">
-          Complete the analysis workflow to generate exportable results and reports.
-        </p>
-      </div>
-    )
-  }
+  // Note: Export section can work even without data prop since it uses backend data
 
   return (
     <div className="space-y-6">
@@ -331,13 +353,43 @@ export function ExportSection({ data }: ExportSectionProps) {
         </div>
       </div>
 
+      {/* Export Error */}
+      {exportError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Export Failed:</strong> {exportError}
+            <br />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => {
+                setExportError(null)
+                startExport()
+              }}
+            >
+              Try Again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Export Complete */}
-      {exportComplete && (
+      {exportComplete && exportResults && (
         <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-200">
-            Export completed successfully! {selectedItems.length} files have been prepared for download. Check your
-            downloads folder for the exported materials.
+            <div className="space-y-2">
+              <p className="font-medium">Export completed successfully!</p>
+              <p>{exportResults.files.length} files have been generated:</p>
+              <ul className="list-disc list-inside text-sm">
+                {exportResults.files.map((file, index) => (
+                  <li key={index}>{file.split('/').pop()}</li>
+                ))}
+              </ul>
+              <p className="text-sm">Files are saved in the exports directory and ready for download.</p>
+            </div>
           </AlertDescription>
         </Alert>
       )}

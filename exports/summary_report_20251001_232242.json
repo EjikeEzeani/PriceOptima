@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-10-01T23:22:42.837406",
+  "data_summary": {
+    "total_records": 5,
+    "columns": [
+      "Date",
+      "Product",
+      "Category",
+      "Price",
+      "Quantity",
+      "Revenue"
+    ],
+    "date_range": "N/A"
+  },
+  "analysis_results": "Analysis completed successfully"
+}

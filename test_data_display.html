@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Display Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Data Display Test - Fixing [object Object] Issue</h1>
+    
+    <div class="test-section">
+        <h2>Test Data (Simulating Backend Response)</h2>
+        <p>This simulates the data structure returned by the backend API:</p>
+        <pre id="test-data"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Before Fix (Shows [object Object])</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="before-fix">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>After Fix (Proper String Conversion)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="after-fix">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Simulate the data structure from backend
+        const testData = {
+            headers: ["date", "product", "category", "price", "quantity", "revenue"],
+            preview: [
+                { date: "2024-01-01", product: "Rice 5kg", category: "Grains", price: 2500, quantity: 45, revenue: 112500 },
+                { date: "2024-01-01", product: "Tomatoes 1kg", category: "Vegetables", price: 800, quantity: 120, revenue: 96000 },
+                { date: "2024-01-02", product: "Chicken 1kg", category: "Meat", price: 1500, quantity: 30, revenue: 45000 },
+                { date: "2024-01-02", product: "Milk 1L", category: "Dairy", price: 600, quantity: 80, revenue: 48000 },
+                { date: "2024-01-03", product: "Bread", category: "Bakery", price: 300, quantity: 100, revenue: 30000 }
+            ]
+        };
+
+        // Display test data
+        document.getElementById('test-data').textContent = JSON.stringify(testData, null, 2);
+
+        // Function to safely convert values to strings (the fix)
+        function safeStringify(value) {
+            if (value === null || value === undefined) return "N/A";
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        }
+
+        // Before fix - direct display (causes [object Object])
+        const beforeFixTbody = document.getElementById('before-fix');
+        testData.preview.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            testData.headers.slice(0, 4).forEach(header => {
+                const td = document.createElement('td');
+                // This would cause [object Object] if value is an object
+                td.textContent = row[header] || "N/A";
+                tr.appendChild(td);
+            });
+            beforeFixTbody.appendChild(tr);
+        });
+
+        // After fix - safe string conversion
+        const afterFixTbody = document.getElementById('after-fix');
+        testData.preview.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            testData.headers.slice(0, 4).forEach(header => {
+                const td = document.createElement('td');
+                // This safely converts any value to string
+                td.textContent = safeStringify(row[header]);
+                tr.appendChild(td);
+            });
+            afterFixTbody.appendChild(tr);
+        });
+
+        // Test with problematic data that would cause [object Object]
+        console.log("Testing with problematic data:");
+        const problematicData = {
+            headers: ["date", "product", "nested_data", "price"],
+            preview: [
+                { 
+                    date: "2024-01-01", 
+                    product: "Rice 5kg", 
+                    nested_data: { category: "Grains", supplier: "ABC Corp" }, // This would cause [object Object]
+                    price: 2500 
+                }
+            ]
+        };
+
+        console.log("Before fix:", problematicData.preview[0].nested_data); // Shows object
+        console.log("After fix:", safeStringify(problematicData.preview[0].nested_data)); // Shows JSON string
+    </script>
+</body>
+</html>

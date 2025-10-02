@@ -1,7 +1,7 @@
 # config.yaml
 data:
   raw_dir: data/raw
-  processed_dir: data/processed
+  processed_dir: C:/Users/USER/Documents/PriceOptima/exports
   merged_filename: merged_input_dataset.parquet
 
 simulation:

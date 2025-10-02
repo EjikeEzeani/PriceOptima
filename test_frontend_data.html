@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Data Handling Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Data Handling Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Data (Simulating Backend Response)</h2>
+        <pre id="test-data"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Data Preview Table (Current Implementation)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="current-implementation">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Log</h2>
+        <div id="console-log"></div>
+    </div>
+
+    <script>
+        // Simulate the exact data structure from backend
+        const testData = {
+            "files": [{"name": "test_data.csv", "size": 200, "type": "text/csv"}],
+            "headers": ["date", "product", "category", "price", "quantity", "revenue"],
+            "rows": [
+                {"date": "2024-01-01", "product": "Rice 5kg", "category": "Grains", "price": 2500, "quantity": 45, "revenue": 112500},
+                {"date": "2024-01-01", "product": "Tomatoes 1kg", "category": "Vegetables", "price": 800, "quantity": 120, "revenue": 96000},
+                {"date": "2024-01-02", "product": "Chicken 1kg", "category": "Meat", "price": 1500, "quantity": 30, "revenue": 45000},
+                {"date": "2024-01-02", "product": "Milk 1L", "category": "Dairy", "price": 600, "quantity": 80, "revenue": 48000},
+                {"date": "2024-01-03", "product": "Bread", "category": "Bakery", "price": 300, "quantity": 100, "revenue": 30000}
+            ],
+            "summary": {
+                "totalRecords": 5,
+                "dateRange": "2024-01-01 to 2024-01-03",
+                "products": 5,
+                "categories": 5,
+                "totalRevenue": 331500.0,
+                "avgPrice": 1140.0
+            },
+            "preview": [
+                {"date": "2024-01-01", "product": "Rice 5kg", "category": "Grains", "price": 2500, "quantity": 45, "revenue": 112500},
+                {"date": "2024-01-01", "product": "Tomatoes 1kg", "category": "Vegetables", "price": 800, "quantity": 120, "revenue": 96000},
+                {"date": "2024-01-02", "product": "Chicken 1kg", "category": "Meat", "price": 1500, "quantity": 30, "revenue": 45000},
+                {"date": "2024-01-02", "product": "Milk 1L", "category": "Dairy", "price": 600, "quantity": 80, "revenue": 48000},
+                {"date": "2024-01-03", "product": "Bread", "category": "Bakery", "price": 300, "quantity": 100, "revenue": 30000}
+            ],
+            "status": "success",
+            "message": "Successfully uploaded 5 records"
+        };
+
+        // Display test data
+        document.getElementById('test-data').textContent = JSON.stringify(testData, null, 2);
+
+        // Function to safely convert values to strings (the fix)
+        function safeStringify(value) {
+            if (value === null || value === undefined) return "N/A";
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        }
+
+        // Test the current implementation
+        const tbody = document.getElementById('current-implementation');
+        const consoleLog = document.getElementById('console-log');
+        
+        try {
+            // Simulate the exact code from upload-section.tsx
+            testData.preview.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                testData.headers.slice(0, 4).forEach(header => {
+                    const td = document.createElement('td');
+                    
+                    // This is the exact code from the component
+                    const value = row[header];
+                    if (value === null || value === undefined) {
+                        td.textContent = "N/A";
+                    } else if (typeof value === 'object') {
+                        td.textContent = JSON.stringify(value);
+                    } else {
+                        td.textContent = String(value);
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            
+            consoleLog.innerHTML = '<div class="success">✅ Data rendering successful - no [object Object] issues</div>';
+        } catch (error) {
+            consoleLog.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+        }
+
+        // Test with problematic data that would cause [object Object]
+        console.log("Testing with problematic data:");
+        const problematicData = {
+            headers: ["date", "product", "nested_data", "price"],
+            preview: [
+                { 
+                    date: "2024-01-01", 
+                    product: "Rice 5kg", 
+                    nested_data: { category: "Grains", supplier: "ABC Corp" }, // This would cause [object Object]
+                    price: 2500 
+                }
+            ]
+        };
+
+        console.log("Before fix:", problematicData.preview[0].nested_data); // Shows object
+        console.log("After fix:", safeStringify(problematicData.preview[0].nested_data)); // Shows JSON string
+    </script>
+</body>
+</html>

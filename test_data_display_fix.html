@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Display Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>Data Display Fix Test - [object Object] Issue Resolution</h1>
+    
+    <div class="test-section">
+        <h2>Test Data (Simulating Backend Response)</h2>
+        <pre id="test-data"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Before Fix (Shows [object Object])</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="before-fix">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>After Fix (Proper String Conversion)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="after-fix">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Simulate the exact data structure from backend
+        const testData = {
+            "files": [{"name": "test_data.csv", "size": 200, "type": "text/csv"}],
+            "headers": ["date", "product", "category", "price", "quantity", "revenue"],
+            "summary": {
+                "totalRecords": 5,
+                "dateRange": "2024-01-01 to 2024-01-03",
+                "products": 5,
+                "categories": 5,
+                "totalRevenue": 331500.0,
+                "avgPrice": 1140.0
+            },
+            "preview": [
+                {"date": "2024-01-01", "product": "Rice 5kg", "category": "Grains", "price": 2500, "quantity": 45, "revenue": 112500},
+                {"date": "2024-01-01", "product": "Tomatoes 1kg", "category": "Vegetables", "price": 800, "quantity": 120, "revenue": 96000},
+                {"date": "2024-01-02", "product": "Chicken 1kg", "category": "Meat", "price": 1500, "quantity": 30, "revenue": 45000},
+                {"date": "2024-01-02", "product": "Milk 1L", "category": "Dairy", "price": 600, "quantity": 80, "revenue": 48000},
+                {"date": "2024-01-03", "product": "Bread", "category": "Bakery", "price": 300, "quantity": 100, "revenue": 30000}
+            ],
+            "status": "success",
+            "message": "Successfully uploaded 5 records"
+        };
+
+        // Display test data
+        document.getElementById('test-data').textContent = JSON.stringify(testData, null, 2);
+
+        // Function to safely convert values to strings (the fix)
+        function safeStringify(value) {
+            if (value === null || value === undefined) return "N/A";
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        }
+
+        // Before fix - direct display (causes [object Object])
+        const beforeFixTbody = document.getElementById('before-fix');
+        testData.preview.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            testData.headers.slice(0, 4).forEach(header => {
+                const td = document.createElement('td');
+                // This would cause [object Object] if value is an object
+                td.textContent = row[header] || "N/A";
+                tr.appendChild(td);
+            });
+            beforeFixTbody.appendChild(tr);
+        });
+
+        // After fix - safe string conversion
+        const afterFixTbody = document.getElementById('after-fix');
+        testData.preview.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            testData.headers.slice(0, 4).forEach(header => {
+                const td = document.createElement('td');
+                // This safely converts any value to string
+                td.textContent = safeStringify(row[header]);
+                tr.appendChild(td);
+            });
+            afterFixTbody.appendChild(tr);
+        });
+
+        // Test with problematic data that would cause [object Object]
+        const problematicData = {
+            headers: ["date", "product", "nested_data", "price"],
+            preview: [
+                { 
+                    date: "2024-01-01", 
+                    product: "Rice 5kg", 
+                    nested_data: { category: "Grains", supplier: "ABC Corp" }, // This would cause [object Object]
+                    price: 2500 
+                }
+            ]
+        };
+
+        // Test results
+        const testResults = document.getElementById('test-results');
+        let results = [];
+
+        // Test 1: Normal data
+        const normalData = testData.preview[0];
+        const normalTest = Object.values(normalData).every(value => 
+            typeof value === 'string' || typeof value === 'number'
+        );
+        results.push(`✅ Normal data test: ${normalTest ? 'PASS' : 'FAIL'}`);
+
+        // Test 2: Object data handling
+        const objectData = problematicData.preview[0];
+        const objectTest = safeStringify(objectData.nested_data) === '{"category":"Grains","supplier":"ABC Corp"}';
+        results.push(`✅ Object data test: ${objectTest ? 'PASS' : 'FAIL'}`);
+
+        // Test 3: Null/undefined handling
+        const nullTest = safeStringify(null) === 'N/A' && safeStringify(undefined) === 'N/A';
+        results.push(`✅ Null/undefined test: ${nullTest ? 'PASS' : 'FAIL'}`);
+
+        // Test 4: String conversion
+        const stringTest = safeStringify(123) === '123' && safeStringify(true) === 'true';
+        results.push(`✅ String conversion test: ${stringTest ? 'PASS' : 'FAIL'}`);
+
+        testResults.innerHTML = results.map(result => `<div>${result}</div>`).join('');
+
+        console.log("Test Results:");
+        console.log("Normal data:", normalData);
+        console.log("Object data before fix:", objectData.nested_data);
+        console.log("Object data after fix:", safeStringify(objectData.nested_data));
+    </script>
+</body>
+</html>

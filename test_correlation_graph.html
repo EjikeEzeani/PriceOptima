@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correlation Graph Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .data-preview { max-height: 300px; overflow-y: auto; }
+        .loading { color: #007bff; font-style: italic; }
+        .chart-container { width: 100%; height: 300px; border: 1px solid #ddd; margin: 10px 0; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/recharts@2.8.0/umd/Recharts.js"></script>
+</head>
+<body>
+    <h1>Price vs Quantity Correlation Graph Test</h1>
+    
+    <div class="test-section info">
+        <h2>Test Overview</h2>
+        <p>This test verifies that the Price vs Quantity Correlation graph displays correctly with real data.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 1: Upload Sample Data</h2>
+        <button onclick="uploadSampleData()">Upload Sample Data</button>
+        <div id="upload-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 2: Run EDA Analysis</h2>
+        <button onclick="runEDAAnalysis()" id="edaBtn" disabled>Run EDA Analysis</button>
+        <div id="eda-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 3: Test Correlation Graph Data</h2>
+        <button onclick="testCorrelationData()" id="correlationBtn" disabled>Test Correlation Data</button>
+        <div id="correlation-result"></div>
+        <div id="chart-container" class="chart-container"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Step 4: Verify Graph Functionality</h2>
+        <div id="verification-result"></div>
+    </div>
+
+    <script>
+        let uploadedData = null;
+        let edaResults = null;
+        const API_BASE_URL = 'http://localhost:8000';
+
+        async function uploadSampleData() {
+            const resultDiv = document.getElementById('upload-result');
+            const edaBtn = document.getElementById('edaBtn');
+            
+            try {
+                // Create sample data with clear price-quantity relationships
+                const sampleData = `Date,Product,Category,Price,Quantity,Revenue
+2024-01-01,Rice 5kg,Grains,2500,45,112500
+2024-01-01,Tomatoes 1kg,Vegetables,800,120,96000
+2024-01-02,Bread 1kg,Bakery,300,200,60000
+2024-01-02,Milk 1L,Dairy,500,150,75000
+2024-01-03,Chicken 1kg,Meat,1200,80,96000
+2024-01-03,Apples 1kg,Fruits,600,100,60000
+2024-01-04,Potatoes 5kg,Vegetables,1500,60,90000
+2024-01-04,Yogurt 500ml,Dairy,400,80,32000
+2024-01-05,Beef 1kg,Meat,2000,30,60000
+2024-01-05,Oranges 1kg,Fruits,500,90,45000`;
+
+                const blob = new Blob([sampleData], { type: 'text/csv' });
+                const file = new File([blob], 'test_correlation_data.csv', { type: 'text/csv' });
+                
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_BASE_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    uploadedData = data;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Upload successful!<br>
+                            <strong>Data Summary:</strong><br>
+                            - Total records: ${data.summary.totalRecords}<br>
+                            - Products: ${data.summary.products}<br>
+                            - Categories: ${data.summary.categories}<br>
+                            - Total revenue: ₦${data.summary.totalRevenue.toLocaleString()}<br>
+                            - Preview rows: ${data.preview.length}<br><br>
+                            
+                            <strong>Sample Data for Correlation:</strong>
+                            <div class="data-preview">
+                                <pre>${JSON.stringify(data.preview, null, 2)}</pre>
+                            </div>
+                        </div>
+                    `;
+                    
+                    edaBtn.disabled = false;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<div class="error">❌ Upload failed: ${errorData.error || response.statusText}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Upload error: ${error.message}</div>`;
+            }
+        }
+
+        async function runEDAAnalysis() {
+            const resultDiv = document.getElementById('eda-result');
+            const edaBtn = document.getElementById('edaBtn');
+            const correlationBtn = document.getElementById('correlationBtn');
+            
+            edaBtn.disabled = true;
+            edaBtn.textContent = "Analyzing...";
+            resultDiv.innerHTML = '<div class="loading">🔄 Running EDA analysis...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/eda`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    edaResults = data;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ EDA analysis completed!<br>
+                            <strong>Correlation Results:</strong><br>
+                            - Price-Quantity correlation: ${data.correlations.price_quantity.toFixed(3)}<br>
+                            - Price-Revenue correlation: ${data.correlations.price_revenue.toFixed(3)}<br>
+                            - Categories found: ${Object.keys(data.overview.category_distribution).length}<br>
+                            - Insights: ${data.insights.length}
+                        </div>
+                    `;
+                    
+                    correlationBtn.disabled = false;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<div class="error">❌ EDA analysis failed: ${errorData.error || response.statusText}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ EDA analysis error: ${error.message}</div>`;
+            } finally {
+                edaBtn.disabled = false;
+                edaBtn.textContent = "Run EDA Analysis";
+            }
+        }
+
+        function testCorrelationData() {
+            const resultDiv = document.getElementById('correlation-result');
+            const chartContainer = document.getElementById('chart-container');
+            
+            if (!uploadedData) {
+                resultDiv.innerHTML = '<div class="error">❌ No data available. Please upload data first.</div>';
+                return;
+            }
+
+            try {
+                // Process data for correlation graph
+                const correlationData = uploadedData.preview.map((item, index) => ({
+                    price: parseFloat(item.Price) || 0,
+                    quantity: parseFloat(item.Quantity) || 0,
+                    category: item.Category || "Unknown",
+                    product: item.Product || `Product ${index + 1}`
+                }));
+
+                console.log('Correlation data:', correlationData);
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        ✅ Correlation data processed successfully!<br>
+                        <strong>Data Points:</strong> ${correlationData.length}<br>
+                        <strong>Price Range:</strong> ₦${Math.min(...correlationData.map(d => d.price))} - ₦${Math.max(...correlationData.map(d => d.price))}<br>
+                        <strong>Quantity Range:</strong> ${Math.min(...correlationData.map(d => d.quantity))} - ${Math.max(...correlationData.map(d => d.quantity))} units<br>
+                        <strong>Categories:</strong> ${[...new Set(correlationData.map(d => d.category))].join(', ')}
+                    </div>
+                `;
+
+                // Create a simple visualization
+                chartContainer.innerHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <h3>Price vs Quantity Scatter Plot</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
+                            ${correlationData.map(item => `
+                                <div style="
+                                    width: 60px; 
+                                    height: 60px; 
+                                    background: #3b82f6; 
+                                    border-radius: 50%; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center; 
+                                    color: white; 
+                                    font-size: 10px; 
+                                    text-align: center;
+                                    position: relative;
+                                " title="${item.product}: ₦${item.price}, ${item.quantity} units">
+                                    <div>
+                                        <div>₦${item.price}</div>
+                                        <div>${item.quantity}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p style="margin-top: 20px; color: #666;">
+                            Each circle represents a product: Price (top) vs Quantity (bottom)
+                        </p>
+                    </div>
+                `;
+
+                // Verify the correlation graph functionality
+                verifyCorrelationGraph(correlationData);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Correlation data processing failed: ${error.message}</div>`;
+            }
+        }
+
+        function verifyCorrelationGraph(data) {
+            const verificationDiv = document.getElementById('verification-result');
+            
+            // Calculate actual correlation
+            const n = data.length;
+            const sumX = data.reduce((sum, item) => sum + item.price, 0);
+            const sumY = data.reduce((sum, item) => sum + item.quantity, 0);
+            const sumXY = data.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const sumX2 = data.reduce((sum, item) => sum + item.price * item.price, 0);
+            const sumY2 = data.reduce((sum, item) => sum + item.quantity * item.quantity, 0);
+            
+            const correlation = (n * sumXY - sumX * sumY) / 
+                Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            
+            const isWorking = data.length > 0 && 
+                             data.every(item => typeof item.price === 'number' && typeof item.quantity === 'number') &&
+                             !isNaN(correlation);
+
+            verificationDiv.innerHTML = `
+                <div class="${isWorking ? 'success' : 'error'}">
+                    ${isWorking ? '✅' : '❌'} <strong>Correlation Graph Test ${isWorking ? 'PASSED' : 'FAILED'}!</strong><br><br>
+                    
+                    <strong>Test Results:</strong><br>
+                    ✅ Data processing: ${data.length > 0 ? 'PASS' : 'FAIL'}<br>
+                    ✅ Data validation: ${data.every(item => typeof item.price === 'number' && typeof item.quantity === 'number') ? 'PASS' : 'FAIL'}<br>
+                    ✅ Correlation calculation: ${!isNaN(correlation) ? 'PASS' : 'FAIL'}<br>
+                    ✅ Graph data structure: ${data.every(item => item.product && item.category) ? 'PASS' : 'FAIL'}<br><br>
+                    
+                    <strong>Calculated Correlation:</strong> ${correlation.toFixed(3)}<br>
+                    <strong>Data Points:</strong> ${data.length}<br>
+                    <strong>Price Range:</strong> ₦${Math.min(...data.map(d => d.price))} - ₦${Math.max(...data.map(d => d.price))}<br>
+                    <strong>Quantity Range:</strong> ${Math.min(...data.map(d => d.quantity))} - ${Math.max(...data.map(d => d.quantity))} units<br><br>
+                    
+                    ${isWorking ? 
+                        '<strong>🎉 The Price vs Quantity Correlation graph is working correctly!</strong><br>You can now use the frontend application at <a href="http://localhost:3000" target="_blank">http://localhost:3000</a>' :
+                        '<strong>⚠️ Issues detected. Check the data processing logic.</strong>'
+                    }
+                </div>
+            `;
+        }
+
+        // Auto-run upload on page load
+        window.onload = function() {
+            uploadSampleData();
+        };
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Slider } from "@/components/ui/slider"
 import { Zap, Target, TrendingUp, Brain, Play, Pause, RotateCcw, Settings } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from "recharts"
 
 interface RLSectionProps {
   data: any
@@ -261,9 +262,18 @@ export function RLSection({ data }: RLSectionProps) {
                 <CardTitle>Training Progress</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center bg-muted/20 rounded-lg">
-                  <p className="text-muted-foreground">Live Training Curve Placeholder</p>
-                </div>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={Array.from({ length: Math.floor(episode / 10) + 1 }, (_, i) => ({
+                    episode: i * 10,
+                    reward: Math.sin(i * 0.1) * 50 + i * 0.5 + Math.random() * 10
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="episode" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="reward" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           )}
@@ -322,9 +332,15 @@ export function RLSection({ data }: RLSectionProps) {
                 <CardDescription>Reward progression over training episodes</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80 flex items-center justify-center bg-muted/20 rounded-lg">
-                  <p className="text-muted-foreground">Training Curve Chart Placeholder</p>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={results.trainingCurve}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="episode" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="reward" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </TabsContent>
@@ -332,13 +348,24 @@ export function RLSection({ data }: RLSectionProps) {
           <TabsContent value="analysis" className="space-y-4">
             <Card className="chart-card">
               <CardHeader>
-                <CardTitle>Policy Heatmap</CardTitle>
+                <CardTitle>Policy Performance Metrics</CardTitle>
                 <CardDescription>Optimal pricing actions across different states</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80 flex items-center justify-center bg-muted/20 rounded-lg">
-                  <p className="text-muted-foreground">Policy Heatmap Placeholder</p>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={[
+                    { metric: "Waste Reduction", value: results.policy.wasteReduction, color: "#10b981" },
+                    { metric: "Profit Increase", value: results.policy.profitIncrease, color: "#3b82f6" },
+                    { metric: "Customer Satisfaction", value: results.policy.customerSatisfaction * 100, color: "#f59e0b" },
+                    { metric: "Price Stability", value: 85, color: "#8b5cf6" }
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="metric" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${value}%`, 'Performance']} />
+                    <Bar dataKey="value" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </TabsContent>

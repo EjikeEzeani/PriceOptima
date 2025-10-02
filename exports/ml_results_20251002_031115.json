@@ -1,0 +1,70 @@
+{
+  "modelId": "random_forest",
+  "metrics": {
+    "r2": 0.9970944036539525,
+    "rmse": 1207.9635256716153,
+    "mae": 835.7681
+  },
+  "predictions": [
+    {
+      "actual": 6314.0,
+      "predicted": 6750.0,
+      "product": "Product 1"
+    },
+    {
+      "actual": 59130.0,
+      "predicted": 56467.24,
+      "product": "Product 2"
+    },
+    {
+      "actual": 38406.0,
+      "predicted": 37186.81,
+      "product": "Product 3"
+    },
+    {
+      "actual": 41895.0,
+      "predicted": 41572.53,
+      "product": "Product 4"
+    },
+    {
+      "actual": 26730.0,
+      "predicted": 27702.69,
+      "product": "Product 5"
+    },
+    {
+      "actual": 11256.0,
+      "predicted": 13037.72,
+      "product": "Product 6"
+    },
+    {
+      "actual": 22554.0,
+      "predicted": 22670.73,
+      "product": "Product 7"
+    },
+    {
+      "actual": 4872.0,
+      "predicted": 5561.41,
+      "product": "Product 8"
+    },
+    {
+      "actual": 7751.0,
+      "predicted": 7699.61,
+      "product": "Product 9"
+    },
+    {
+      "actual": 46280.0,
+      "predicted": 46775.57,
+      "product": "Product 10"
+    }
+  ],
+  "featureImportance": [
+    {
+      "feature": "price",
+      "importance": 0.5592641701615012
+    },
+    {
+      "feature": "quantity",
+      "importance": 0.4407358298384989
+    }
+  ]
+}

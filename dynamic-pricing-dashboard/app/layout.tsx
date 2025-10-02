@@ -18,21 +18,32 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Hint to some wallets to avoid injecting dapp detection scripts
+              try { (window as any).__disableDappDetectionInjection = true } catch {}
+
               window.addEventListener('unhandledrejection', function(event) {
-                if (event.reason && typeof event.reason === 'string' && 
-                    (event.reason.includes('MetaMask') || event.reason.includes('ethereum'))) {
-                  console.warn('Suppressed Web3/MetaMask error:', event.reason);
-                  event.preventDefault();
-                }
+                try {
+                  const r = (event as any).reason;
+                  const msg = typeof r === 'string' ? r : (r && (r.message || r.toString())) || '';
+                  if (msg && (msg.includes('MetaMask') || msg.includes('ethereum') || msg.includes('Failed to connect to MetaMask'))) {
+                    console.warn('Suppressed Web3/MetaMask error:', msg);
+                    event.preventDefault();
+                    return false;
+                  }
+                } catch {}
               });
               
               // Prevent any Web3 provider injection errors
               if (typeof window !== 'undefined') {
                 window.addEventListener('error', function(event) {
-                  if (event.message && (event.message.includes('MetaMask') || event.message.includes('ethereum'))) {
-                    console.warn('Suppressed Web3 error:', event.message);
-                    event.preventDefault();
-                  }
+                  try {
+                    const msg = (event as any).message || ((event as any).error && (event as any).error.message) || '';
+                    if (msg && (msg.includes('MetaMask') || msg.includes('ethereum') || msg.includes('Failed to connect to MetaMask'))) {
+                      console.warn('Suppressed Web3 error:', msg);
+                      event.preventDefault();
+                      return false;
+                    }
+                  } catch {}
                 });
               }
             `,

@@ -139,16 +139,64 @@ class APIClient {
     }
   }
 
-  // Upload data
+  // Upload data (with fallbacks for alternate backends)
   async uploadData(file: File): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.request<UploadResponse>('/upload', {
-      method: 'POST',
-      headers: {}, // Let browser set Content-Type for FormData
-      body: formData,
-    });
+    // Primary endpoint used by the working backends
+    try {
+      return await this.request<UploadResponse>('/upload', {
+        method: 'POST',
+        headers: {}, // Let browser set Content-Type for FormData
+        body: formData,
+      });
+    } catch (primaryError) {
+      // Fallback 1: older alias supported by some backends
+      try {
+        const resp = await this.request<any>('/upload-dataset', {
+          method: 'POST',
+          headers: {},
+          body: formData,
+        });
+
+        // Normalize older responses (e.g., from app.py) to UploadResponse
+        const headers: string[] = Array.isArray(resp?.headers)
+          ? resp.headers
+          : Array.isArray(resp?.summary?.columnNames)
+            ? resp.summary.columnNames
+            : Array.isArray(resp?.preview) && resp.preview.length > 0
+              ? Object.keys(resp.preview[0])
+              : [];
+
+        const rows: any[] = Array.isArray(resp?.rows)
+          ? resp.rows
+          : Array.isArray(resp?.preview)
+            ? resp.preview
+            : [];
+
+        const uploadResponse: UploadResponse = {
+          files: resp?.files ?? [],
+          headers,
+          rows: rows.slice(0, 1000),
+          summary: {
+            totalRecords: Number(resp?.summary?.totalRecords ?? rows.length ?? 0),
+            dateRange: 'N/A',
+            products: 0,
+            categories: 0,
+            totalRevenue: 0,
+            avgPrice: 0,
+          },
+          preview: Array.isArray(resp?.preview) ? resp.preview : rows.slice(0, 5),
+          totalRows: Number(resp?.totalRows ?? rows.length ?? 0),
+        };
+
+        return uploadResponse;
+      } catch (fallbackError) {
+        // Re-throw original error with context
+        throw primaryError;
+      }
+    }
   }
 
   // EDA Analysis
@@ -204,11 +252,31 @@ class APIClient {
     }
   }
 
-  // Backend Status
+  // Backend Status (fallback to /results on older backends)
   async getStatus(): Promise<BackendStatus> {
-    return this.request<BackendStatus>('/status', {
-      method: 'GET',
-    });
+    try {
+      return await this.request<BackendStatus>('/status', {
+        method: 'GET',
+      });
+    } catch (e) {
+      try {
+        const resp = await this.request<any>('/results', { method: 'GET' });
+        const mapped: BackendStatus = {
+          uploaded: Boolean(resp?.uploaded ?? resp?.data_uploaded ?? false),
+          processed: Boolean(resp?.processed ?? resp?.data_uploaded ?? false),
+          eda_complete: Boolean(resp?.eda_complete ?? resp?.eda_completed ?? false),
+          timestamp: new Date().toISOString(),
+        };
+        return mapped;
+      } catch {
+        return {
+          uploaded: false,
+          processed: false,
+          eda_complete: false,
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
   }
 }
 

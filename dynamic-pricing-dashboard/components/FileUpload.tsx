@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { uploadData, type UploadResponse } from "@/lib/api";
 
 export default function FileUpload() {
   const [status, setStatus] = useState<string | null>(null);
@@ -14,27 +15,14 @@ export default function FileUpload() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await fetch("http://localhost:8000/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const data: UploadResponse = await uploadData(file);
+      const columnNames = data.headers ?? (data.preview?.length ? Object.keys(data.preview[0]) : []);
+      const rowsCount = data.totalRows ?? data.rows?.length ?? data.preview?.length ?? 0;
 
-      if (!res.ok) {
-        const err = await res.json();
-        setStatus(`❌ Upload failed: ${err.detail}`);
-        return;
-      }
-
-      const data = await res.json();
-      setStatus(
-        `✅ Uploaded ${data.filename}. Rows: ${data.rows}, Columns: ${data.columns.join(", ")}`
-      );
-    } catch (err) {
-      setStatus("❌ Error uploading dataset. Check server connection.");
+      setStatus(`✅ Uploaded. Rows: ${rowsCount}, Columns: ${columnNames.join(", ")}`);
+    } catch (err: any) {
+      setStatus(`❌ Error uploading dataset: ${err?.message || 'Check server connection.'}`);
     }
   };
 

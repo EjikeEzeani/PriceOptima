@@ -18,7 +18,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { exportReports, downloadFile, type ExportResponse } from "@/lib/api"
+import { exportReports, downloadFile, healthCheck as apiHealthCheck, type ExportResponse } from "@/lib/api"
 
 interface ExportSectionProps {
   data: any
@@ -142,11 +142,9 @@ export function ExportSection({ data }: ExportSectionProps) {
     try {
       console.log('Starting export with items:', selectedItems)
       
-      // Test backend connection first
-      const healthCheck = await fetch('http://localhost:8000/health')
-      if (!healthCheck.ok) {
-        throw new Error('Backend server is not responding. Please ensure the backend is running on port 8000.')
-      }
+      // Test backend connection first via centralized API client
+      const ok = await apiHealthCheck()
+      if (!ok) throw new Error('Backend server is not responding. Please ensure the backend is running on port 8000.')
 
       // Simulate export progress
       for (let i = 0; i <= 100; i += 5) {

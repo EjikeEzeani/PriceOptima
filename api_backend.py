@@ -20,8 +20,8 @@ import pandas as pd
 
 app = FastAPI()
 
-# Allow CORS for local frontend dev (explicit origins to avoid credential wildcard issues)
-ALLOWED_ORIGINS = [
+# CORS configuration: local defaults + optional env-driven origins for deployment
+DEFAULT_CORS_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
@@ -29,10 +29,21 @@ ALLOWED_ORIGINS = [
     "http://localhost:3010",
     "http://127.0.0.1:3010",
 ]
+
+# Additional origins via env, comma-separated (e.g., https://app.example.com,https://www.example.com)
+_extra_origins = os.getenv("PRICEOPTIMA_ALLOWED_ORIGINS", "")
+if _extra_origins:
+    DEFAULT_CORS_ORIGINS += [o.strip() for o in _extra_origins.split(",") if o.strip()]
+
+# Optional: allow all origins (credentials disabled) for quick testing
+_allow_all = os.getenv("PRICEOPTIMA_ALLOW_ALL_ORIGINS", "").strip() == "1"
+_cors_allow_origins = ["*"] if _allow_all else list(dict.fromkeys(DEFAULT_CORS_ORIGINS))
+_cors_allow_credentials = False if _allow_all else True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_origins=_cors_allow_origins,
+    allow_credentials=_cors_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

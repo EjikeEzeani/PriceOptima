@@ -62,7 +62,7 @@ const testimonials = [
       "The dynamic pricing helped us optimize inventory turnover across 50 stores. We're seeing 18% better margins.",
     rating: 5,
     metric: "18% margin improvement",
-    image: "/happy-nigerian-woman-business-professional-headshot.jpg",
+    image: "/happy-nigerian-woman-operations-director-headshot.jpg",
     location: "Port Harcourt, Nigeria",
   },
   {
@@ -72,7 +72,7 @@ const testimonials = [
     content: "Easy to use and incredibly powerful. Our team adopted it quickly and results were immediate.",
     rating: 5,
     metric: "Immediate ROI",
-    image: "/happy-nigerian-woman-business-professional-headshot.jpg",
+    image: "/happy-asian-woman-business-professional-headshot.jpg",
     location: "Abuja, Nigeria",
   },
   {
@@ -82,7 +82,7 @@ const testimonials = [
     content: "PriceOptima transformed our pricing strategy. Customer satisfaction up 25% while profits increased.",
     rating: 5,
     metric: "25% satisfaction boost",
-    image: "/happy-nigerian-store-manager-professional-headshot.jpg",
+    image: "/happy-hispanic-man-ceo-professional-headshot.jpg",
     location: "Kano, Nigeria",
   },
   {
@@ -92,7 +92,7 @@ const testimonials = [
     content: "The waste reduction alone saved us ₦2M annually. Best investment we've made for our business.",
     rating: 5,
     metric: "₦2M saved annually",
-    image: "/happy-nigerian-woman-business-professional-headshot.jpg",
+    image: "/happy-middle-eastern-woman-business-owner-headshot.jpg",
     location: "Kaduna, Nigeria",
   },
   {

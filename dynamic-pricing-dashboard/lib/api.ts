@@ -3,11 +3,23 @@
  * Centralized API endpoints and data fetching utilities
  */
 
-// Prefer loopback IP to avoid IPv6/host resolution edge cases on Windows
-// Use Next.js proxy (`/api`) by default in the browser to avoid CORS during local dev
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== 'undefined' ? '/api' : 'http://127.0.0.1:8000');
+// API Base URL configuration
+// In development: use Next.js proxy (/api) or localhost
+// In production: use deployed backend URL
+const API_BASE_URL = (() => {
+  // If NEXT_PUBLIC_API_URL is set, use it (for production)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // In browser (client-side), use /api proxy in development, direct URL in production
+  if (typeof window !== 'undefined') {
+    return process.env.NODE_ENV === 'development' ? '/api' : 'https://your-backend-url.railway.app';
+  }
+  
+  // Server-side rendering fallback
+  return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://your-backend-url.railway.app';
+})();
 
 export interface UploadResponse {
   files: Array<{

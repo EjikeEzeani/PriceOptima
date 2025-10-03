@@ -77,6 +77,73 @@ def clean_nan_values(obj):
     else:
         return obj
 
+def generate_key_insights(data, eda_results, ml_results):
+    """Generate key insights from the analysis results."""
+    insights = []
+    
+    if data is not None:
+        # Data insights
+        total_records = len(data)
+        insights.append(f"Dataset contains {total_records} records")
+        
+        if 'Revenue' in data.columns:
+            total_revenue = data['Revenue'].sum()
+            avg_revenue = data['Revenue'].mean()
+            insights.append(f"Total revenue: ${total_revenue:,.2f}, Average: ${avg_revenue:,.2f}")
+        
+        if 'Product' in data.columns:
+            unique_products = data['Product'].nunique()
+            insights.append(f"Analysis covers {unique_products} different products")
+    
+    if eda_results:
+        # EDA insights
+        if 'correlations' in eda_results:
+            corr_data = eda_results['correlations']
+            if 'price_quantity' in corr_data:
+                corr_val = corr_data['price_quantity']
+                if abs(corr_val) > 0.5:
+                    direction = "strong positive" if corr_val > 0 else "strong negative"
+                    insights.append(f"Price and quantity show {direction} correlation ({corr_val:.2f})")
+        
+        if 'outliers' in eda_results:
+            total_outliers = sum(eda_results['outliers'].values())
+            if total_outliers > 0:
+                insights.append(f"Detected {total_outliers} outlier values that may need attention")
+    
+    if ml_results:
+        # ML insights
+        model_type = ml_results.get('modelId', 'Unknown')
+        metrics = ml_results.get('metrics', {})
+        
+        insights.append(f"Best performing model: {model_type}")
+        
+        if 'r2' in metrics:
+            r2 = metrics['r2']
+            if r2 > 0.8:
+                insights.append(f"Excellent model performance (R² = {r2:.3f})")
+            elif r2 > 0.6:
+                insights.append(f"Good model performance (R² = {r2:.3f})")
+            elif r2 > 0.3:
+                insights.append(f"Moderate model performance (R² = {r2:.3f})")
+            else:
+                insights.append(f"Poor model performance (R² = {r2:.3f}) - consider feature engineering")
+        
+        if 'shapExplanations' in ml_results:
+            shap_data = ml_results['shapExplanations']
+            if 'feature_importance' in shap_data and shap_data['feature_importance']:
+                top_feature = shap_data['feature_importance'][0]
+                insights.append(f"Most important feature: {top_feature['feature']} (importance: {top_feature['importance']:.3f})")
+        
+        if 'futureForecast' in ml_results:
+            forecast_data = ml_results['futureForecast']
+            if 'summary' in forecast_data:
+                summary = forecast_data['summary']
+                trend = summary.get('trend', 'unknown')
+                growth_rate = summary.get('growth_rate', 0)
+                insights.append(f"Future trend: {trend} with {growth_rate:.1f}% growth rate")
+    
+    return insights
+
 # Enable detailed error payloads in development when PRICEOPTIMA_DEBUG=1
 DEBUG = os.getenv("PRICEOPTIMA_DEBUG", "").strip() == "1"
 
@@ -562,43 +629,110 @@ def train_ml_model(df, model_type="random_forest"):
             
             # Use the last available data point as base for forecasting
             last_features = X.iloc[-1:].values
+            last_target = y.iloc[-1]
             
-            # For tree-based models, we can make predictions directly
-            if model_type in ["random_forest", "gradient_boosting", "xgboost"]:
+            # Calculate historical trends for more sophisticated forecasting
+            if len(y) > 1:
+                # Calculate recent trend
+                recent_data = y.tail(min(10, len(y)))
+                if len(recent_data) > 1:
+                    trend_slope = np.polyfit(range(len(recent_data)), recent_data, 1)[0]
+                    trend_percentage = (trend_slope / recent_data.mean()) * 100 if recent_data.mean() != 0 else 0
+                else:
+                    trend_percentage = 0
+            else:
+                trend_percentage = 0
+            
+            # Model-specific forecasting strategies
+            if model_type == "linear":
+                # For linear models, use coefficient-based forecasting
+                if hasattr(model, 'coef_'):
+                    future_predictions = []
+                    for i in range(n_future_periods):
+                        # Apply trend to features
+                        trend_factor = 1 + (i * trend_percentage / 100) if trend_percentage != 0 else 1 + (i * 0.01)
+                        adjusted_features = last_features * trend_factor
+                        pred = model.predict(adjusted_features)[0]
+                        clean_pred = float(pred) if not (np.isnan(pred) or np.isinf(pred)) else float(last_target)
+                        future_predictions.append({
+                            "period": i + 1,
+                            "predicted_value": clean_pred,
+                            "confidence": max(0.3, 1.0 - (i * 0.15)),
+                            "method": "linear_trend"
+                        })
+                else:
+                    future_predictions = []
+            else:
+                # For tree-based models, use ensemble-based forecasting
                 future_predictions = []
                 for i in range(n_future_periods):
-                    # Simple trend-based adjustment (can be improved with more sophisticated methods)
-                    trend_factor = 1 + (i * 0.02)  # 2% growth per period
-                    adjusted_features = last_features * trend_factor
-                    pred = model.predict(adjusted_features)[0]
-                    clean_pred = float(pred) if not (np.isnan(pred) or np.isinf(pred)) else 0.0
+                    # Multiple scenarios for better forecasting
+                    scenarios = []
+                    
+                    # Scenario 1: Conservative (slight growth)
+                    conservative_factor = 1 + (i * 0.01)
+                    conservative_features = last_features * conservative_factor
+                    conservative_pred = model.predict(conservative_features)[0]
+                    
+                    # Scenario 2: Moderate (trend-based)
+                    moderate_factor = 1 + (i * max(0.01, trend_percentage / 100))
+                    moderate_features = last_features * moderate_factor
+                    moderate_pred = model.predict(moderate_features)[0]
+                    
+                    # Scenario 3: Optimistic (higher growth)
+                    optimistic_factor = 1 + (i * 0.03)
+                    optimistic_features = last_features * optimistic_factor
+                    optimistic_pred = model.predict(optimistic_features)[0]
+                    
+                    # Average the scenarios
+                    avg_pred = (conservative_pred + moderate_pred + optimistic_pred) / 3
+                    clean_pred = float(avg_pred) if not (np.isnan(avg_pred) or np.isinf(avg_pred)) else float(last_target)
+                    
+                    # Calculate confidence based on scenario agreement
+                    scenario_variance = np.var([conservative_pred, moderate_pred, optimistic_pred])
+                    confidence = max(0.4, 1.0 - (i * 0.12) - (scenario_variance / 1000))
+                    
                     future_predictions.append({
                         "period": i + 1,
                         "predicted_value": clean_pred,
-                        "confidence": max(0.5, 1.0 - (i * 0.1))  # Decreasing confidence over time
+                        "confidence": confidence,
+                        "method": "ensemble_scenarios",
+                        "scenarios": {
+                            "conservative": float(conservative_pred),
+                            "moderate": float(moderate_pred),
+                            "optimistic": float(optimistic_pred)
+                        }
                     })
-                
-                future_forecast = {
-                    "predictions": future_predictions,
-                    "method": "trend_based",
-                    "summary": {
-                        "total_periods": n_future_periods,
-                        "avg_prediction": np.mean([p["predicted_value"] for p in future_predictions]),
-                        "trend": "increasing" if future_predictions[-1]["predicted_value"] > future_predictions[0]["predicted_value"] else "decreasing"
-                    }
-                }
+            
+            # Calculate summary statistics
+            if future_predictions:
+                values = [p["predicted_value"] for p in future_predictions]
+                avg_prediction = np.mean(values)
+                trend = "increasing" if values[-1] > values[0] else "decreasing" if values[-1] < values[0] else "stable"
+                growth_rate = ((values[-1] - values[0]) / values[0] * 100) if values[0] != 0 else 0
             else:
-                # For linear models, use a simple linear trend
-                future_forecast = {
-                    "predictions": [],
-                    "method": "linear_trend",
-                    "summary": {
-                        "total_periods": 0,
-                        "avg_prediction": 0.0,
-                        "trend": "unknown"
-                    },
-                    "error": "Future forecasting not implemented for linear models"
+                avg_prediction = 0.0
+                trend = "unknown"
+                growth_rate = 0.0
+            
+            future_forecast = {
+                "predictions": future_predictions,
+                "method": f"{model_type}_enhanced",
+                "summary": {
+                    "total_periods": n_future_periods,
+                    "avg_prediction": avg_prediction,
+                    "trend": trend,
+                    "growth_rate": growth_rate,
+                    "first_period": future_predictions[0]["predicted_value"] if future_predictions else 0.0,
+                    "last_period": future_predictions[-1]["predicted_value"] if future_predictions else 0.0,
+                    "confidence_avg": np.mean([p["confidence"] for p in future_predictions]) if future_predictions else 0.0
+                },
+                "model_info": {
+                    "type": model_type,
+                    "historical_trend": trend_percentage,
+                    "base_value": float(last_target)
                 }
+            }
         except Exception as e:
             future_forecast = {
                 "predictions": [],
@@ -606,7 +740,11 @@ def train_ml_model(df, model_type="random_forest"):
                 "summary": {
                     "total_periods": 0,
                     "avg_prediction": 0.0,
-                    "trend": "unknown"
+                    "trend": "unknown",
+                    "growth_rate": 0.0,
+                    "first_period": 0.0,
+                    "last_period": 0.0,
+                    "confidence_avg": 0.0
                 },
                 "error": f"Future forecasting failed: {str(e)}"
             }
@@ -763,6 +901,9 @@ async def run_ml(request: Request):
                 content=cleaned_results
             )
         else:
+            # Cache the results for SHAP and forecasting endpoints
+            global ml_results_cache
+            ml_results_cache = cleaned_results
             return JSONResponse(
                 status_code=200,
                 content=cleaned_results
@@ -843,13 +984,22 @@ async def get_shap_analysis():
         # SHAP Analysis
         import shap
         
-        if model_type == "linear":
-            explainer = shap.LinearExplainer(model, X_train)
-        else:
-            explainer = shap.TreeExplainer(model)
-        
-        # Get SHAP values for test set
-        shap_values = explainer.shap_values(X_test[:20])  # Limit to 20 samples
+        try:
+            if model_type == "linear":
+                explainer = shap.LinearExplainer(model, X_train)
+                shap_values = explainer.shap_values(X_test[:20])
+            else:
+                # For tree-based models, use TreeExplainer
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(X_test[:20])
+        except Exception as e:
+            # Fallback to KernelExplainer if TreeExplainer fails
+            try:
+                explainer = shap.KernelExplainer(model.predict, X_train[:50])  # Use subset for performance
+                shap_values = explainer.shap_values(X_test[:10])  # Limit samples
+            except Exception as e2:
+                # If all SHAP methods fail, return empty results
+                raise Exception(f"SHAP analysis failed: {str(e)}. Fallback also failed: {str(e2)}")
         
         # Calculate feature importance
         feature_names = list(X.columns)
@@ -998,15 +1148,32 @@ async def export_results(request: Request):
         
         for item in items:
             if item == "summary_report":
-                # Generate summary report
+                # Generate comprehensive summary report
                 report_data = {
                     "timestamp": datetime.now().isoformat(),
+                    "project_info": {
+                        "name": "PriceOptima Analysis Report",
+                        "version": "2.0",
+                        "generated_by": "PriceOptima AI System"
+                    },
                     "data_summary": {
                         "total_records": len(processed_data),
                         "columns": list(processed_data.columns),
-                        "date_range": "N/A"
+                        "date_range": f"{processed_data['Date'].min()} to {processed_data['Date'].max()}" if 'Date' in processed_data.columns and not processed_data['Date'].isna().all() else "N/A",
+                        "numeric_columns": processed_data.select_dtypes(include=[np.number]).columns.tolist(),
+                        "categorical_columns": processed_data.select_dtypes(include=['object']).columns.tolist(),
+                        "missing_values": processed_data.isnull().sum().to_dict(),
+                        "data_quality_score": (1 - processed_data.isnull().sum().sum() / (len(processed_data) * len(processed_data.columns))) * 100
                     },
-                    "analysis_results": "Analysis completed successfully"
+                    "eda_results": eda_results_cache if eda_results_cache else {},
+                    "ml_results": ml_results_cache if ml_results_cache else {},
+                    "analysis_summary": {
+                        "eda_completed": eda_results_cache is not None,
+                        "ml_completed": ml_results_cache is not None,
+                        "best_model": ml_results_cache.get("modelId", "N/A") if ml_results_cache else "N/A",
+                        "model_performance": ml_results_cache.get("metrics", {}) if ml_results_cache else {},
+                        "key_insights": generate_key_insights(processed_data, eda_results_cache, ml_results_cache)
+                    }
                 }
                 # JSON summary
                 json_filename = f"summary_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -1015,33 +1182,124 @@ async def export_results(request: Request):
                     json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
                 exported_files.append(json_filename)
 
-                # DOCX report (with visuals and metrics)
+                # Enhanced DOCX report (with comprehensive analysis)
                 try:
                     doc = Document()
                     doc.add_heading('PriceOptima Executive Summary', 0)
                     doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    doc.add_paragraph(f"Report Version: {report_data['project_info']['version']}")
+                    
+                    # Executive Summary
+                    doc.add_heading('Executive Summary', level=1)
+                    doc.add_paragraph("This comprehensive analysis report provides insights into pricing optimization, revenue forecasting, and business intelligence using advanced machine learning techniques.")
+                    
+                    # Data Summary
                     doc.add_heading('Data Summary', level=1)
-                    doc.add_paragraph(f"Total Records: {report_data['data_summary']['total_records']}")
-                    doc.add_paragraph(f"Columns: {', '.join(report_data['data_summary']['columns'])}")
-                    # Insert small preview table (first 10 rows if small)
+                    data_summary = report_data['data_summary']
+                    doc.add_paragraph(f"Total Records: {data_summary['total_records']}")
+                    doc.add_paragraph(f"Date Range: {data_summary['date_range']}")
+                    doc.add_paragraph(f"Data Quality Score: {data_summary['data_quality_score']:.1f}%")
+                    doc.add_paragraph(f"Numeric Columns: {', '.join(data_summary['numeric_columns'])}")
+                    doc.add_paragraph(f"Categorical Columns: {', '.join(data_summary['categorical_columns'])}")
+                    
+                    # Missing Values Analysis
+                    if data_summary['missing_values']:
+                        doc.add_heading('Data Quality Analysis', level=2)
+                        missing_table = doc.add_table(rows=1, cols=2)
+                        missing_table.style = 'Table Grid'
+                        hdr_cells = missing_table.rows[0].cells
+                        hdr_cells[0].text = 'Column'
+                        hdr_cells[1].text = 'Missing Values'
+                        for col, missing_count in data_summary['missing_values'].items():
+                            if missing_count > 0:
+                                row_cells = missing_table.add_row().cells
+                                row_cells[0].text = str(col)
+                                row_cells[1].text = str(missing_count)
+                    
+                    # EDA Results
+                    if eda_results_cache:
+                        doc.add_heading('Exploratory Data Analysis', level=1)
+                        doc.add_paragraph("Key findings from the exploratory data analysis:")
+                        
+                        if 'correlations' in eda_results_cache:
+                            doc.add_heading('Correlation Analysis', level=2)
+                            for corr_name, corr_value in eda_results_cache['correlations'].items():
+                                doc.add_paragraph(f"{corr_name.replace('_', ' ').title()}: {corr_value:.3f}")
+                        
+                        if 'outliers' in eda_results_cache:
+                            doc.add_heading('Outlier Detection', level=2)
+                            for col, outlier_count in eda_results_cache['outliers'].items():
+                                if outlier_count > 0:
+                                    doc.add_paragraph(f"{col}: {outlier_count} outliers detected")
+                    
+                    # ML Results
+                    if ml_results_cache:
+                        doc.add_heading('Machine Learning Analysis', level=1)
+                        model_type = ml_results_cache.get('modelId', 'Unknown')
+                        metrics = ml_results_cache.get('metrics', {})
+                        
+                        doc.add_paragraph(f"Model Type: {model_type}")
+                        doc.add_paragraph(f"R² Score: {metrics.get('r2', 'N/A')}")
+                        doc.add_paragraph(f"RMSE: {metrics.get('rmse', 'N/A')}")
+                        doc.add_paragraph(f"MAE: {metrics.get('mae', 'N/A')}")
+                        doc.add_paragraph(f"MAPE: {metrics.get('mape', 'N/A')}%")
+                        
+                        # Feature Importance
+                        if 'featureImportance' in ml_results_cache:
+                            doc.add_heading('Feature Importance', level=2)
+                            feature_table = doc.add_table(rows=1, cols=2)
+                            feature_table.style = 'Table Grid'
+                            hdr_cells = feature_table.rows[0].cells
+                            hdr_cells[0].text = 'Feature'
+                            hdr_cells[1].text = 'Importance'
+                            for feature in ml_results_cache['featureImportance']:
+                                row_cells = feature_table.add_row().cells
+                                row_cells[0].text = feature['feature']
+                                row_cells[1].text = f"{feature['importance']:.3f}"
+                        
+                        # SHAP Analysis
+                        if 'shapExplanations' in ml_results_cache:
+                            doc.add_heading('SHAP Explainability Analysis', level=2)
+                            shap_data = ml_results_cache['shapExplanations']
+                            if 'summary' in shap_data:
+                                summary = shap_data['summary']
+                                doc.add_paragraph(f"Total Features Analyzed: {summary.get('total_features', 'N/A')}")
+                                doc.add_paragraph(f"Top Feature: {summary.get('top_feature', 'N/A')}")
+                                doc.add_paragraph(f"Top Feature Importance: {summary.get('top_importance', 'N/A')}")
+                        
+                        # Future Forecasting
+                        if 'futureForecast' in ml_results_cache:
+                            doc.add_heading('Future Forecasting', level=2)
+                            forecast_data = ml_results_cache['futureForecast']
+                            if 'summary' in forecast_data:
+                                summary = forecast_data['summary']
+                                doc.add_paragraph(f"Forecasting Method: {forecast_data.get('method', 'N/A')}")
+                                doc.add_paragraph(f"Predicted Trend: {summary.get('trend', 'N/A')}")
+                                doc.add_paragraph(f"Growth Rate: {summary.get('growth_rate', 'N/A')}%")
+                                doc.add_paragraph(f"Average Prediction: {summary.get('avg_prediction', 'N/A')}")
+                    
+                    # Key Insights
+                    if 'analysis_summary' in report_data and 'key_insights' in report_data['analysis_summary']:
+                        doc.add_heading('Key Insights & Recommendations', level=1)
+                        insights = report_data['analysis_summary']['key_insights']
+                        for insight in insights:
+                            doc.add_paragraph(f"• {insight}")
+                    
+                    # Data Preview Table
+                    doc.add_heading('Data Preview', level=1)
                     try:
-                        preview = processed_data.head(5)
+                        preview = processed_data.head(10)
                         table = doc.add_table(rows=1, cols=len(preview.columns))
+                        table.style = 'Table Grid'
                         hdr_cells = table.rows[0].cells
-                        for i, c in enumerate(preview.columns):
-                            hdr_cells[i].text = str(c)
+                        for i, col in enumerate(preview.columns):
+                            hdr_cells[i].text = str(col)
                         for _, row in preview.iterrows():
-                            cells = table.add_row().cells
-                            for i, c in enumerate(preview.columns):
-                                cells[i].text = str(row.get(c, ""))
+                            row_cells = table.add_row().cells
+                            for i, col in enumerate(preview.columns):
+                                row_cells[i].text = str(row.get(col, ""))
                     except Exception:
-                        pass
-                    doc.add_heading('Key Insights', level=1)
-                    for insight in report_data.get('insights', []):
-                        doc.add_paragraph(insight, style='List Bullet')
-                    doc.add_heading('Recommendations', level=1)
-                    for rec in report_data.get('recommendations', []):
-                        doc.add_paragraph(rec, style='List Bullet')
+                        doc.add_paragraph("Data preview not available")
                     # Add charts
                     generated = _generate_visualizations(processed_data)
                     if generated:

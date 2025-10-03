@@ -34,8 +34,9 @@ DEFAULT_CORS_ORIGINS = [
     "http://127.0.0.1:3001",
     "http://localhost:3010",
     "http://127.0.0.1:3010",
-    "https://*.vercel.app",  # Allow all Vercel domains
     "https://priceoptima-2-0.vercel.app",  # Your specific Vercel domain
+    "https://priceoptima-2-0-git-main-ejikeezeani.vercel.app",  # Vercel preview domain
+    "https://priceoptima-2-0-git-develop-ejikeezeani.vercel.app",  # Vercel branch domain
 ]
 
 # Additional origins via env, comma-separated (e.g., https://app.example.com,https://www.example.com)
@@ -43,7 +44,7 @@ _extra_origins = os.getenv("PRICEOPTIMA_ALLOWED_ORIGINS", "")
 if _extra_origins:
     DEFAULT_CORS_ORIGINS += [o.strip() for o in _extra_origins.split(",") if o.strip()]
 
-# Optional: allow all origins (credentials disabled) for quick testing
+# Allow all origins for production deployment to avoid CORS issues
 _allow_all = os.getenv("PRICEOPTIMA_ALLOW_ALL_ORIGINS", "1").strip() == "1"
 _cors_allow_origins = ["*"] if _allow_all else list(dict.fromkeys(DEFAULT_CORS_ORIGINS))
 _cors_allow_credentials = False if _allow_all else True
@@ -1455,6 +1456,10 @@ async def download_all():
                 if not fp.endswith('.zip'):
                     zf.write(fp, arcname=os.path.basename(fp))
     return FileResponse(zip_path, filename=zip_filename)
+
+@app.get("/")
+async def root():
+    return {"message": "PriceOptima API", "status": "running", "version": "2.0"}
 
 @app.get("/health")
 async def health_check():

@@ -17,6 +17,19 @@
   - `https://priceoptima-production.up.railway.app`
 - Copy this URL - you'll need it for Vercel!
 
+## 🔧 Troubleshooting
+
+### If Railway deployment fails:
+1. Check the logs in Railway dashboard
+2. Make sure all dependencies are in `requirements.txt`
+3. Try using `requirements-py313.txt` for Python 3.13 compatibility
+4. Check if Python version is compatible (use Python 3.11 if needed)
+
+### If Render deployment fails:
+1. Use `runtime.txt` to specify Python 3.11.9
+2. Use `requirements-py313.txt` for better compatibility
+3. Check build logs for specific errors
+
 ### 4. Configure Vercel
 - Go to your Vercel dashboard
 - Select your PriceOptima project

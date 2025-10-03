@@ -7,6 +7,8 @@ import json
 import os
 from datetime import datetime
 import re
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -51,6 +53,45 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Custom JSON encoder to handle NaN values
+class NaNEncoder(json.JSONEncoder):
+    def encode(self, obj):
+        if isinstance(obj, float):
+            if np.isnan(obj) or np.isinf(obj):
+                return "0.0"
+        return super().encode(obj)
+
+def clean_nan_values(obj):
+    """Recursively clean NaN and inf values from a dictionary/list"""
+    if isinstance(obj, dict):
+        return {key: clean_nan_values(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nan_values(item) for item in obj]
+    elif isinstance(obj, float):
+        if np.isnan(obj) or np.isinf(obj):
+            return 0.0
+        return obj
+    else:
+        return obj
+
+# Enable detailed error payloads in development when PRICEOPTIMA_DEBUG=1
+DEBUG = os.getenv("PRICEOPTIMA_DEBUG", "").strip() == "1"
+
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception):
+    # Normalize HTTPException vs other server errors
+    if isinstance(exc, HTTPException):
+        content = {"error": exc.detail} if DEBUG else {"error": "Request failed"}
+        return JSONResponse(status_code=exc.status_code, content=content)
+    detail = {"error": "Internal Server Error"}
+    if DEBUG:
+        detail.update({
+            "type": exc.__class__.__name__,
+            "message": str(exc),
+            "path": str(request.url),
+        })
+    return JSONResponse(status_code=500, content=detail)
 
 # Global data storage (in production, use a database)
 uploaded_data = None
@@ -239,9 +280,11 @@ def compute_eda(df: pd.DataFrame) -> dict:
         corr_matrix = df[numeric_cols].corr().fillna(0)
         # expose some key correlations if present
         if all(col in numeric_cols for col in ["Price", "Quantity"]):
-            correlations["price_quantity"] = float(corr_matrix.loc["Price", "Quantity"])
+            corr_val = corr_matrix.loc["Price", "Quantity"]
+            correlations["price_quantity"] = float(corr_val) if not (np.isnan(corr_val) or np.isinf(corr_val)) else 0.0
         if all(col in numeric_cols for col in ["Price", "Revenue"]):
-            correlations["price_revenue"] = float(corr_matrix.loc["Price", "Revenue"])
+            corr_val = corr_matrix.loc["Price", "Revenue"]
+            correlations["price_revenue"] = float(corr_val) if not (np.isnan(corr_val) or np.isinf(corr_val)) else 0.0
     
     # Outlier detection using IQR on numeric columns
     outliers = {}
@@ -252,7 +295,10 @@ def compute_eda(df: pd.DataFrame) -> dict:
         lower = q1 - 1.5 * iqr
         upper = q3 + 1.5 * iqr
         count = int(((df[col] < lower) | (df[col] > upper)).sum())
-        outliers[col] = {"count": count, "lower": float(lower), "upper": float(upper)}
+        # Handle NaN/inf values in outlier bounds
+        clean_lower = float(lower) if not (np.isnan(lower) or np.isinf(lower)) else 0.0
+        clean_upper = float(upper) if not (np.isnan(upper) or np.isinf(upper)) else 0.0
+        outliers[col] = {"count": count, "lower": clean_lower, "upper": clean_upper}
 
     return {
         "overview": {
@@ -354,6 +400,10 @@ def train_ml_model(df, model_type="random_forest"):
         X = df[numeric_cols[:-1]]  # All but last column as features
         y = df[numeric_cols[-1]]   # Last column as target
         
+        # Clean data of NaN and inf values
+        X = X.fillna(0).replace([np.inf, -np.inf], 0)
+        y = y.fillna(0).replace([np.inf, -np.inf], 0)
+        
         # Select model by type
         if model_type == "random_forest":
             model = RandomForestRegressor(n_estimators=300, random_state=42, n_jobs=-1)
@@ -386,7 +436,7 @@ def train_ml_model(df, model_type="random_forest"):
         model.fit(X_train, y_train)
         predictions = model.predict(X_test)
         
-        # Calculate metrics
+        # Calculate metrics with NaN handling
         r2 = r2_score(y_test, predictions)
         rmse = float(np.sqrt(mean_squared_error(y_test, predictions)))
         mae = float(mean_absolute_error(y_test, predictions))
@@ -395,18 +445,41 @@ def train_ml_model(df, model_type="random_forest"):
         except Exception:
             mape = None
         
-        # Feature importance
+        # Handle NaN values for JSON serialization
+        if np.isnan(r2) or np.isinf(r2):
+            r2 = 0.0
+        if np.isnan(rmse) or np.isinf(rmse):
+            rmse = 0.0
+        if np.isnan(mae) or np.isinf(mae):
+            mae = 0.0
+        if mape is not None and (np.isnan(mape) or np.isinf(mae)):
+            mape = None
+        
+        # Feature importance with NaN handling
         if hasattr(model, 'feature_importances_'):
-            feature_importance = [
-                {"feature": col, "importance": float(imp)}
-                for col, imp in zip(X.columns, model.feature_importances_)
-            ]
+            feature_importance = []
+            for col, imp in zip(X.columns, model.feature_importances_):
+                # Handle NaN/inf values in feature importance
+                clean_imp = float(imp) if not (np.isnan(imp) or np.isinf(imp)) else 0.0
+                feature_importance.append({"feature": col, "importance": clean_imp})
         else:
             feature_importance = [
                 {"feature": col, "importance": 1.0/len(X.columns)}
                 for col in X.columns
             ]
         
+        # Clean predictions for JSON serialization
+        clean_predictions = []
+        for i, (actual, pred) in enumerate(zip(y_test[:10], predictions[:10])):
+            # Handle NaN/inf values in predictions
+            clean_actual = float(actual) if not (np.isnan(actual) or np.isinf(actual)) else 0.0
+            clean_pred = float(pred) if not (np.isnan(pred) or np.isinf(pred)) else 0.0
+            clean_predictions.append({
+                "actual": clean_actual, 
+                "predicted": clean_pred, 
+                "product": f"Sample {i+1}"
+            })
+
         results = {
             "modelId": model_type,
             "metrics": {
@@ -415,10 +488,7 @@ def train_ml_model(df, model_type="random_forest"):
                 "mae": mae,
                 "mape": mape,
             },
-            "predictions": [
-                {"actual": float(actual), "predicted": float(pred), "product": f"Sample {i+1}"}
-                for i, (actual, pred) in enumerate(zip(y_test[:10], predictions[:10]))
-            ],
+            "predictions": clean_predictions,
             "featureImportance": feature_importance
         }
 
@@ -468,8 +538,8 @@ async def upload_data(file: UploadFile = File(...)):
             "dateRange": f"{processed['Date'].min()} to {processed['Date'].max()}" if 'Date' in processed.columns and len(processed) else "N/A",
             "products": processed['Product'].nunique() if 'Product' in processed.columns else 0,
             "categories": processed['Category'].nunique() if 'Category' in processed.columns else 0,
-            "totalRevenue": float(processed['Revenue'].sum()) if 'Revenue' in processed.columns else 0,
-            "avgPrice": float(processed['Price'].mean()) if 'Price' in processed.columns else 0,
+            "totalRevenue": float(processed['Revenue'].sum()) if 'Revenue' in processed.columns and not (np.isnan(processed['Revenue'].sum()) or np.isinf(processed['Revenue'].sum())) else 0,
+            "avgPrice": float(processed['Price'].mean()) if 'Price' in processed.columns and not (np.isnan(processed['Price'].mean()) or np.isinf(processed['Price'].mean())) else 0,
         }
         preview = rows[:5]
         
@@ -542,7 +612,28 @@ async def run_ml(request: Request):
         
         # Train ML model on the processed data
         ml_results = train_ml_model(processed_data.copy(), actual_model_type)
-        return ml_results
+        
+        # Debug: Check for NaN values before cleaning
+        if DEBUG:
+            print(f"ML results before cleaning: {ml_results}")
+        
+        # Clean NaN values from the response
+        cleaned_results = clean_nan_values(ml_results)
+        
+        # Debug: Check for NaN values after cleaning
+        if DEBUG:
+            print(f"ML results after cleaning: {cleaned_results}")
+        
+        if "error" in cleaned_results:
+            return JSONResponse(
+                status_code=500,
+                content=cleaned_results
+            )
+        else:
+            return JSONResponse(
+                status_code=200,
+                content=cleaned_results
+            )
     except Exception as e:
         return JSONResponse(
             status_code=500,

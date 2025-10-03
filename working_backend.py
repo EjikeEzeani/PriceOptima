@@ -12,6 +12,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.preprocessing import StandardScaler
+import matplotlib
+matplotlib.use("Agg")
 import xgboost as xgb
 import shap
 import joblib
@@ -45,6 +47,23 @@ rl_results = {}
 
 # Create exports directory
 os.makedirs("exports", exist_ok=True)
+
+# Global debug flag for verbose 500s
+DEBUG = os.getenv("PRICEOPTIMA_DEBUG", "").strip() == "1"
+
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, HTTPException):
+        content = {"error": exc.detail} if DEBUG else {"error": "Request failed"}
+        return JSONResponse(status_code=exc.status_code, content=content)
+    detail = {"error": "Internal Server Error"}
+    if DEBUG:
+        detail.update({
+            "type": exc.__class__.__name__,
+            "message": str(exc),
+            "path": str(request.url),
+        })
+    return JSONResponse(status_code=500, content=detail)
 
 @app.get("/")
 async def root():
@@ -343,11 +362,27 @@ def train_ml_model(df, model_type="random_forest"):
         train_mape = mean_absolute_percentage_error(y_train, train_predictions)
         test_mape = mean_absolute_percentage_error(y_test, test_predictions)
         
-        # Cross-validation scores
-        if model_type == "linear_regression":
-            cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=5, scoring='r2')
-        else:
-            cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
+        # Cross-validation scores (adapt to dataset size to avoid errors)
+        try:
+            # Determine a safe number of folds
+            n_train = len(X_train)
+            max_cv = 5
+            cv_folds = max(2, min(max_cv, n_train)) if n_train >= 2 else 0
+
+            if cv_folds >= 2:
+                if model_type == "linear_regression":
+                    cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=cv_folds, scoring='r2')
+                else:
+                    cv_scores = cross_val_score(model, X_train, y_train, cv=cv_folds, scoring='r2')
+            else:
+                cv_scores = np.array([])
+        except Exception:
+            # Fallback if CV fails for any edge case
+            cv_scores = np.array([])
+
+        # Compute robust CV stats without NaNs
+        cv_mean_val = float(np.mean(cv_scores)) if cv_scores.size > 0 else 0.0
+        cv_std_val = float(np.std(cv_scores)) if cv_scores.size > 0 else 0.0
         
         # Feature importance
         if hasattr(model, 'feature_importances_'):
@@ -433,7 +468,7 @@ def train_ml_model(df, model_type="random_forest"):
             "overfitting_detected": train_r2 - test_r2 > 0.1,
             "model_stability": "Stable" if abs(train_r2 - test_r2) < 0.05 else "Unstable",
             "prediction_quality": "Excellent" if test_r2 > 0.9 else "Good" if test_r2 > 0.7 else "Fair" if test_r2 > 0.5 else "Poor",
-            "cv_consistency": "High" if np.std(cv_scores) < 0.05 else "Medium" if np.std(cv_scores) < 0.1 else "Low"
+            "cv_consistency": "High" if cv_std_val < 0.05 else "Medium" if cv_std_val < 0.1 else "Low"
         }
         
         # Store model
@@ -466,8 +501,8 @@ def train_ml_model(df, model_type="random_forest"):
                 "train_r2": float(train_r2),
                 "train_rmse": float(train_rmse),
                 "train_mae": float(train_mae),
-                "cv_mean": float(np.mean(cv_scores)),
-                "cv_std": float(np.std(cv_scores))
+                "cv_mean": cv_mean_val,
+                "cv_std": cv_std_val
             },
             "predictions": sample_predictions,
             "featureImportance": feature_importance,

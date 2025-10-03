@@ -164,10 +164,45 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content=detail)
 
 # Global data storage (in production, use a database)
+# Using a simple in-memory store that persists for the lifetime of the process
+_data_store = {
+    "uploaded_data": None,
+    "processed_data": None,
+    "eda_results_cache": None,
+    "ml_results_cache": None,
+    "eda_completed": False
+}
+
+# Backward compatibility
 uploaded_data = None
 processed_data = None
 eda_results_cache = None
+ml_results_cache = None
 eda_completed = False
+
+def get_data(key: str):
+    """Get data from the store"""
+    return _data_store.get(key)
+
+def set_data(key: str, value):
+    """Set data in the store"""
+    _data_store[key] = value
+    # Update global variables for backward compatibility
+    if key == "uploaded_data":
+        global uploaded_data
+        uploaded_data = value
+    elif key == "processed_data":
+        global processed_data
+        processed_data = value
+    elif key == "eda_results_cache":
+        global eda_results_cache
+        eda_results_cache = value
+    elif key == "ml_results_cache":
+        global ml_results_cache
+        ml_results_cache = value
+    elif key == "eda_completed":
+        global eda_completed
+        eda_completed = value
 
 # Constants
 MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB
@@ -779,7 +814,6 @@ def train_ml_model(df, model_type="random_forest"):
 
 @app.post("/upload")
 async def upload_data(file: UploadFile = File(...)):
-    global uploaded_data, processed_data, eda_results_cache, eda_completed
     try:
         # Validate file type by extension and content type
         filename_lower = (file.filename or "").lower()
@@ -796,10 +830,13 @@ async def upload_data(file: UploadFile = File(...)):
         
         # Preprocess (auto on upload)
         processed = preprocess_data(df)
-        uploaded_data = df
-        processed_data = processed
-        eda_results_cache = None
-        eda_completed = False
+        
+        # Store data using the new data store
+        set_data("uploaded_data", df)
+        set_data("processed_data", processed)
+        set_data("eda_results_cache", None)
+        set_data("ml_results_cache", None)
+        set_data("eda_completed", False)
         
         headers = list(processed.columns)
         rows = processed.to_dict(orient="records")
@@ -833,7 +870,7 @@ async def upload_data(file: UploadFile = File(...)):
 
 @app.post("/eda")
 async def run_eda(request: Request):
-    global processed_data, eda_results_cache, eda_completed
+    processed_data = get_data("processed_data")
     if processed_data is None:
         return JSONResponse(
             status_code=400,
@@ -842,9 +879,10 @@ async def run_eda(request: Request):
     
     try:
         # Compute EDA on processed data
-        eda_results_cache = compute_eda(processed_data.copy())
-        eda_completed = True
-        return eda_results_cache
+        eda_results = compute_eda(processed_data.copy())
+        set_data("eda_results_cache", eda_results)
+        set_data("eda_completed", True)
+        return eda_results
     except Exception as e:
         return JSONResponse(
             status_code=500,
@@ -853,7 +891,9 @@ async def run_eda(request: Request):
 
 @app.post("/ml")
 async def run_ml(request: Request):
-    global processed_data, eda_completed
+    processed_data = get_data("processed_data")
+    eda_completed = get_data("eda_completed")
+    
     if processed_data is None:
         return JSONResponse(
             status_code=400,
@@ -903,8 +943,7 @@ async def run_ml(request: Request):
             )
         else:
             # Cache the results for SHAP and forecasting endpoints
-            global ml_results_cache
-            ml_results_cache = cleaned_results
+            set_data("ml_results_cache", cleaned_results)
             return JSONResponse(
                 status_code=200,
                 content=cleaned_results
@@ -937,7 +976,8 @@ async def run_rl(request: Request):
 @app.post("/shap-analysis")
 async def get_shap_analysis():
     """Get detailed SHAP analysis for the trained model"""
-    global processed_data, ml_results_cache
+    processed_data = get_data("processed_data")
+    ml_results_cache = get_data("ml_results_cache")
     
     if processed_data is None:
         raise HTTPException(status_code=400, detail="No data available for SHAP analysis")
@@ -1048,7 +1088,8 @@ async def get_shap_analysis():
 @app.post("/future-forecast")
 async def get_future_forecast(periods: int = 7):
     """Get future forecast predictions"""
-    global processed_data, ml_results_cache
+    processed_data = get_data("processed_data")
+    ml_results_cache = get_data("ml_results_cache")
     
     if processed_data is None:
         raise HTTPException(status_code=400, detail="No data available for forecasting")
@@ -1131,7 +1172,10 @@ async def get_future_forecast(periods: int = 7):
 
 @app.post("/export")
 async def export_results(request: Request):
-    global processed_data, eda_results_cache
+    processed_data = get_data("processed_data")
+    eda_results_cache = get_data("eda_results_cache")
+    ml_results_cache = get_data("ml_results_cache")
+    
     if processed_data is None:
         return JSONResponse(
             status_code=400,

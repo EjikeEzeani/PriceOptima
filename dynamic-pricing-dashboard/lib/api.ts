@@ -14,11 +14,11 @@ const API_BASE_URL = (() => {
   
   // In browser (client-side), use /api proxy in development, direct URL in production
   if (typeof window !== 'undefined') {
-    return process.env.NODE_ENV === 'development' ? '/api' : 'https://your-backend-url.railway.app';
+    return process.env.NODE_ENV === 'development' ? '/api' : 'https://priceoptima-1.onrender.com';
   }
   
   // Server-side rendering fallback
-  return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://your-backend-url.railway.app';
+  return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://priceoptima-1.onrender.com';
 })();
 
 export interface UploadResponse {

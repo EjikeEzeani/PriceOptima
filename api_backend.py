@@ -482,6 +482,135 @@ def train_ml_model(df, model_type="random_forest"):
                 "product": f"Sample {i+1}"
             })
 
+        # SHAP Explainability Analysis
+        shap_explanations = {}
+        try:
+            import shap
+            # Create SHAP explainer based on model type
+            if model_type == "linear":
+                # For linear models, use LinearExplainer
+                explainer = shap.LinearExplainer(model, X_train)
+                shap_values = explainer.shap_values(X_test[:10])  # Limit to 10 samples for performance
+            else:
+                # For tree-based models, use TreeExplainer
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(X_test[:10])  # Limit to 10 samples for performance
+            
+            # Get feature names
+            feature_names = list(X.columns)
+            
+            # Calculate mean absolute SHAP values for feature importance
+            if len(shap_values.shape) == 2:  # 2D array
+                mean_shap_values = np.abs(shap_values).mean(axis=0)
+            else:  # 1D array
+                mean_shap_values = np.abs(shap_values)
+            
+            # Create SHAP feature importance
+            shap_importance = []
+            for i, (feature, importance) in enumerate(zip(feature_names, mean_shap_values)):
+                clean_importance = float(importance) if not (np.isnan(importance) or np.isinf(importance)) else 0.0
+                shap_importance.append({
+                    "feature": feature,
+                    "importance": clean_importance
+                })
+            
+            # Sort by importance
+            shap_importance.sort(key=lambda x: x["importance"], reverse=True)
+            
+            # Sample SHAP values for visualization (first 5 samples, top 5 features)
+            top_features = [item["feature"] for item in shap_importance[:5]]
+            sample_shap_values = []
+            
+            for i in range(min(5, len(shap_values))):
+                sample_data = {}
+                for j, feature in enumerate(feature_names):
+                    if feature in top_features:
+                        clean_value = float(shap_values[i][j]) if not (np.isnan(shap_values[i][j]) or np.isinf(shap_values[i][j])) else 0.0
+                        sample_data[feature] = clean_value
+                sample_shap_values.append({
+                    "sample": i + 1,
+                    "shap_values": sample_data
+                })
+            
+            shap_explanations = {
+                "feature_importance": shap_importance,
+                "sample_explanations": sample_shap_values,
+                "summary": {
+                    "total_features": len(feature_names),
+                    "top_feature": shap_importance[0]["feature"] if shap_importance else None,
+                    "top_importance": shap_importance[0]["importance"] if shap_importance else 0.0
+                }
+            }
+        except Exception as e:
+            # If SHAP fails, provide empty structure
+            shap_explanations = {
+                "feature_importance": [],
+                "sample_explanations": [],
+                "summary": {
+                    "total_features": 0,
+                    "top_feature": None,
+                    "top_importance": 0.0
+                },
+                "error": f"SHAP analysis failed: {str(e)}"
+            }
+
+        # Future Forecasting
+        future_forecast = {}
+        try:
+            # Generate future predictions for the next 7 periods
+            n_future_periods = 7
+            
+            # Use the last available data point as base for forecasting
+            last_features = X.iloc[-1:].values
+            
+            # For tree-based models, we can make predictions directly
+            if model_type in ["random_forest", "gradient_boosting", "xgboost"]:
+                future_predictions = []
+                for i in range(n_future_periods):
+                    # Simple trend-based adjustment (can be improved with more sophisticated methods)
+                    trend_factor = 1 + (i * 0.02)  # 2% growth per period
+                    adjusted_features = last_features * trend_factor
+                    pred = model.predict(adjusted_features)[0]
+                    clean_pred = float(pred) if not (np.isnan(pred) or np.isinf(pred)) else 0.0
+                    future_predictions.append({
+                        "period": i + 1,
+                        "predicted_value": clean_pred,
+                        "confidence": max(0.5, 1.0 - (i * 0.1))  # Decreasing confidence over time
+                    })
+                
+                future_forecast = {
+                    "predictions": future_predictions,
+                    "method": "trend_based",
+                    "summary": {
+                        "total_periods": n_future_periods,
+                        "avg_prediction": np.mean([p["predicted_value"] for p in future_predictions]),
+                        "trend": "increasing" if future_predictions[-1]["predicted_value"] > future_predictions[0]["predicted_value"] else "decreasing"
+                    }
+                }
+            else:
+                # For linear models, use a simple linear trend
+                future_forecast = {
+                    "predictions": [],
+                    "method": "linear_trend",
+                    "summary": {
+                        "total_periods": 0,
+                        "avg_prediction": 0.0,
+                        "trend": "unknown"
+                    },
+                    "error": "Future forecasting not implemented for linear models"
+                }
+        except Exception as e:
+            future_forecast = {
+                "predictions": [],
+                "method": "error",
+                "summary": {
+                    "total_periods": 0,
+                    "avg_prediction": 0.0,
+                    "trend": "unknown"
+                },
+                "error": f"Future forecasting failed: {str(e)}"
+            }
+
         results = {
             "modelId": model_type,
             "metrics": {
@@ -491,7 +620,9 @@ def train_ml_model(df, model_type="random_forest"):
                 "mape": mape,
             },
             "predictions": clean_predictions,
-            "featureImportance": feature_importance
+            "featureImportance": feature_importance,
+            "shapExplanations": shap_explanations,
+            "futureForecast": future_forecast
         }
 
         # Persist model artifact
@@ -660,6 +791,192 @@ async def run_rl(request: Request):
             {"episode": i * 10, "reward": 50 + i * 0.5 + (i % 5) * 2} for i in range(100)
         ],
     }
+
+@app.post("/shap-analysis")
+async def get_shap_analysis():
+    """Get detailed SHAP analysis for the trained model"""
+    global processed_data, ml_results_cache
+    
+    if processed_data is None:
+        raise HTTPException(status_code=400, detail="No data available for SHAP analysis")
+    
+    if ml_results_cache is None:
+        raise HTTPException(status_code=400, detail="ML training must be completed before SHAP analysis")
+    
+    try:
+        # Extract model type from cached results
+        model_type = ml_results_cache.get("modelId", "random_forest")
+        
+        # Prepare features (same as in training)
+        numeric_cols = processed_data.select_dtypes(include=[np.number]).columns.tolist()
+        if len(numeric_cols) < 2:
+            raise HTTPException(status_code=400, detail="Insufficient numeric data for SHAP analysis")
+        
+        X = processed_data[numeric_cols[:-1]]
+        y = processed_data[numeric_cols[-1]]
+        
+        # Clean data
+        X = X.fillna(0).replace([np.inf, -np.inf], 0)
+        y = y.fillna(0).replace([np.inf, -np.inf], 0)
+        
+        # Train/test split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        
+        # Train model (same as in ML endpoint)
+        if model_type == "random_forest":
+            model = RandomForestRegressor(n_estimators=300, random_state=42, n_jobs=-1)
+        elif model_type == "gradient_boosting":
+            model = GradientBoostingRegressor(random_state=42)
+        elif model_type == "xgboost":
+            try:
+                from xgboost import XGBRegressor
+                model = XGBRegressor(n_estimators=300, learning_rate=0.1, max_depth=6, random_state=42)
+            except Exception:
+                model = GradientBoostingRegressor(random_state=42)
+        elif model_type == "linear":
+            model = LinearRegression()
+        else:
+            model = RandomForestRegressor(n_estimators=300, random_state=42, n_jobs=-1)
+        
+        model.fit(X_train, y_train)
+        
+        # SHAP Analysis
+        import shap
+        
+        if model_type == "linear":
+            explainer = shap.LinearExplainer(model, X_train)
+        else:
+            explainer = shap.TreeExplainer(model)
+        
+        # Get SHAP values for test set
+        shap_values = explainer.shap_values(X_test[:20])  # Limit to 20 samples
+        
+        # Calculate feature importance
+        feature_names = list(X.columns)
+        mean_shap_values = np.abs(shap_values).mean(axis=0) if len(shap_values.shape) == 2 else np.abs(shap_values)
+        
+        shap_importance = []
+        for feature, importance in zip(feature_names, mean_shap_values):
+            clean_importance = float(importance) if not (np.isnan(importance) or np.isinf(importance)) else 0.0
+            shap_importance.append({
+                "feature": feature,
+                "importance": clean_importance
+            })
+        
+        shap_importance.sort(key=lambda x: x["importance"], reverse=True)
+        
+        # Sample explanations
+        sample_explanations = []
+        for i in range(min(10, len(shap_values))):
+            sample_data = {}
+            for j, feature in enumerate(feature_names):
+                clean_value = float(shap_values[i][j]) if not (np.isnan(shap_values[i][j]) or np.isinf(shap_values[i][j])) else 0.0
+                sample_data[feature] = clean_value
+            
+            sample_explanations.append({
+                "sample": i + 1,
+                "actual_value": float(y_test.iloc[i]) if not (np.isnan(y_test.iloc[i]) or np.isinf(y_test.iloc[i])) else 0.0,
+                "predicted_value": float(model.predict(X_test.iloc[i:i+1])[0]) if not (np.isnan(model.predict(X_test.iloc[i:i+1])[0]) or np.isinf(model.predict(X_test.iloc[i:i+1])[0])) else 0.0,
+                "shap_values": sample_data
+            })
+        
+        return {
+            "feature_importance": shap_importance,
+            "sample_explanations": sample_explanations,
+            "summary": {
+                "total_features": len(feature_names),
+                "total_samples": len(sample_explanations),
+                "top_feature": shap_importance[0]["feature"] if shap_importance else None,
+                "top_importance": shap_importance[0]["importance"] if shap_importance else 0.0
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SHAP analysis failed: {str(e)}")
+
+@app.post("/future-forecast")
+async def get_future_forecast(periods: int = 7):
+    """Get future forecast predictions"""
+    global processed_data, ml_results_cache
+    
+    if processed_data is None:
+        raise HTTPException(status_code=400, detail="No data available for forecasting")
+    
+    if ml_results_cache is None:
+        raise HTTPException(status_code=400, detail="ML training must be completed before forecasting")
+    
+    try:
+        # Extract model type from cached results
+        model_type = ml_results_cache.get("modelId", "random_forest")
+        
+        # Prepare features
+        numeric_cols = processed_data.select_dtypes(include=[np.number]).columns.tolist()
+        if len(numeric_cols) < 2:
+            raise HTTPException(status_code=400, detail="Insufficient numeric data for forecasting")
+        
+        X = processed_data[numeric_cols[:-1]]
+        y = processed_data[numeric_cols[-1]]
+        
+        # Clean data
+        X = X.fillna(0).replace([np.inf, -np.inf], 0)
+        y = y.fillna(0).replace([np.inf, -np.inf], 0)
+        
+        # Train model
+        if model_type == "random_forest":
+            model = RandomForestRegressor(n_estimators=300, random_state=42, n_jobs=-1)
+        elif model_type == "gradient_boosting":
+            model = GradientBoostingRegressor(random_state=42)
+        elif model_type == "xgboost":
+            try:
+                from xgboost import XGBRegressor
+                model = XGBRegressor(n_estimators=300, learning_rate=0.1, max_depth=6, random_state=42)
+            except Exception:
+                model = GradientBoostingRegressor(random_state=42)
+        elif model_type == "linear":
+            model = LinearRegression()
+        else:
+            model = RandomForestRegressor(n_estimators=300, random_state=42, n_jobs=-1)
+        
+        model.fit(X, y)
+        
+        # Generate future predictions
+        future_predictions = []
+        last_features = X.iloc[-1:].values
+        
+        for i in range(periods):
+            # Apply trend factor
+            trend_factor = 1 + (i * 0.02)  # 2% growth per period
+            adjusted_features = last_features * trend_factor
+            
+            pred = model.predict(adjusted_features)[0]
+            clean_pred = float(pred) if not (np.isnan(pred) or np.isinf(pred)) else 0.0
+            
+            future_predictions.append({
+                "period": i + 1,
+                "predicted_value": clean_pred,
+                "confidence": max(0.5, 1.0 - (i * 0.1))
+            })
+        
+        # Calculate trend
+        if len(future_predictions) > 1:
+            trend = "increasing" if future_predictions[-1]["predicted_value"] > future_predictions[0]["predicted_value"] else "decreasing"
+        else:
+            trend = "stable"
+        
+        return {
+            "predictions": future_predictions,
+            "method": "trend_based",
+            "summary": {
+                "total_periods": periods,
+                "avg_prediction": np.mean([p["predicted_value"] for p in future_predictions]),
+                "trend": trend,
+                "first_period": future_predictions[0]["predicted_value"] if future_predictions else 0.0,
+                "last_period": future_predictions[-1]["predicted_value"] if future_predictions else 0.0
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Future forecasting failed: {str(e)}")
 
 @app.post("/export")
 async def export_results(request: Request):

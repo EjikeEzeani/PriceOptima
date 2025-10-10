@@ -29,7 +29,7 @@ Even the bare minimum version failed because pandas requires compilation.
 ## Render Configuration:
 
 ### Root Directory: (empty)
-### Build Command: `pip install -r requirements_super_minimal.txt`
+### Build Command: `pip install -r backend_requirements_super_minimal.txt`
 ### Start Command: `python -m uvicorn render_super_minimal:app --host 0.0.0.0 --port $PORT`
 
 ## Environment Variables:

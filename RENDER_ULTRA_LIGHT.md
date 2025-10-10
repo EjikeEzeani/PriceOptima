@@ -7,7 +7,7 @@ The previous backend failed to build on Render due to heavy ML dependencies (sci
 
 ### Files:
 - `render_ultra_light.py` - No heavy ML dependencies
-- `requirements_minimal.txt` - Only essential packages
+- `backend_requirements_minimal.txt` - Only essential packages
 
 ### Dependencies Removed:
 - ❌ scikit-learn (causes compilation issues)
@@ -36,7 +36,7 @@ The previous backend failed to build on Render due to heavy ML dependencies (sci
 ## Render Configuration:
 
 ### Root Directory: (empty)
-### Build Command: `pip install -r requirements_minimal.txt`
+### Build Command: `pip install -r backend_requirements_minimal.txt`
 ### Start Command: `python -m uvicorn render_ultra_light:app --host 0.0.0.0 --port $PORT`
 
 ## Environment Variables:

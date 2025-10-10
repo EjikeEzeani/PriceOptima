@@ -9,7 +9,7 @@ Service Root Directory "/opt/render/project/src/render_optimized_backend.py" is 
 
 ### Option 1: Use Root Directory (Simplest)
 1. **Root Directory**: Leave empty or set to `/`
-2. **Build Command**: `pip install -r requirements_render.txt`
+2. **Build Command**: `pip install -r backend_requirements_render.txt`
 3. **Start Command**: `python -m uvicorn render_optimized_backend:app --host 0.0.0.0 --port $PORT`
 
 ### Option 2: Use Docker (Recommended)
@@ -24,7 +24,7 @@ Service Root Directory "/opt/render/project/src/render_optimized_backend.py" is 
 
 ## Files Available:
 - `render_optimized_backend.py` (in root)
-- `requirements_render.txt` (in root)
+- `backend_requirements_render.txt` (in root)
 - `src/render_optimized_backend.py` (in src/)
 - `src/requirements.txt` (in src/)
 - `Dockerfile.render` (Docker option)

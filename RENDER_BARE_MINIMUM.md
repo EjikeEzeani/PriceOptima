@@ -29,7 +29,7 @@ Even the ultra-lightweight version is failing due to pandas/numpy compilation is
 ## Render Configuration:
 
 ### Root Directory: (empty)
-### Build Command: `pip install -r requirements_bare_minimum.txt`
+### Build Command: `pip install -r backend_requirements_bare_minimum.txt`
 ### Start Command: `python -m uvicorn render_bare_minimum:app --host 0.0.0.0 --port $PORT`
 
 ## Environment Variables:

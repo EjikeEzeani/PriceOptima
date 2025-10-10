@@ -3,7 +3,7 @@
 ## Files to Upload to Render
 
 1. **render_optimized_backend.py** - Main application file
-2. **render_requirements.txt** - Python dependencies
+2. **backend_requirements_render.txt** - Python dependencies
 3. **Dockerfile.render** - Docker configuration (optional)
 
 ## Render Service Configuration
@@ -19,7 +19,7 @@ MALLOC_MMAP_THRESHOLD_=131072
 
 ### Build Command
 ```
-pip install -r render_requirements.txt
+pip install -r backend_requirements_render.txt
 ```
 
 ### Start Command
@@ -51,7 +51,7 @@ python -c "from render_optimized_backend import app; import uvicorn; uvicorn.run
 ## Deployment Steps
 
 1. Upload `render_optimized_backend.py` to your Render service
-2. Update requirements.txt with `render_requirements.txt` content
+2. Update requirements.txt with `backend_requirements_render.txt` content
 3. Set environment variables
 4. Deploy and monitor memory usage
 5. Update frontend to point to new backend URL

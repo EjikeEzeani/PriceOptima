@@ -1,0 +1,51 @@
+# Exclude everything that could cause serverless functions
+node_modules/
+.next/
+.vercel/
+*.log
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Exclude API routes
+pages/api/
+app/api/
+# Exclude server-side files
+middleware.js
+middleware.ts
+# Exclude build artifacts
+out/
+dist/
+build/
+# Exclude development files
+.git/
+.gitignore
+README.md
+*.md
+docs/
+test/
+__tests__/
+*.test.*
+*.spec.*
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.turbo/
+tmp/
+temp/
+*.tmp
+*.temp
+*.zip
+*.tar.gz
+*.rar
+*.7z
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+# Exclude OS files
+.DS_Store
+Thumbs.db

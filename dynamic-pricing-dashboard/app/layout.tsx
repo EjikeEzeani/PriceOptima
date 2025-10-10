@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'PriceOptima Dashboard',
-  description: 'Dynamic Pricing Analytics Application',
+  title: 'PriceOptima',
+  description: 'Dynamic Pricing Dashboard'
 }
 
 export default function RootLayout({

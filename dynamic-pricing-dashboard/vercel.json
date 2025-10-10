@@ -1,12 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "out",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "functions": {},
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--max-old-space-size=2048"
-    }
-  }
+  "installCommand": "npm install --production",
+  "framework": "nextjs"
 }

@@ -1,23 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "out",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "functions": {},
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--max-old-space-size=2048"
-    }
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ]
+  "framework": "nextjs"
 }

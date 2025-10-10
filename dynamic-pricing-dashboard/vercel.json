@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "chmod +x build.sh && ./build.sh",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
+  "installCommand": "npm ci --only=production --no-audit --no-fund",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
@@ -10,5 +10,10 @@
   },
   "env": {
     "NEXT_PUBLIC_API_URL": "@next_public_api_url"
+  },
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=4096"
+    }
   }
 }

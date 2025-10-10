@@ -21,6 +21,7 @@ export default function Home() {
             cursor: 'pointer',
             marginTop: '10px'
           }}
+          onClick={() => alert('File upload functionality will connect to Render backend')}
         >
           Process Data
         </button>
@@ -29,6 +30,7 @@ export default function Home() {
         <h3>Backend API Status</h3>
         <p>API URL: {process.env.NEXT_PUBLIC_API_URL || 'Not configured'}</p>
         <p>Status: <span style={{ color: 'green' }}>Ready</span></p>
+        <p>Note: This is a static frontend. Backend processing happens on Render.</p>
       </div>
     </div>
   )

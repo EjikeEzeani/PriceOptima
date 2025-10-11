@@ -54,3 +54,7 @@ temp/
 models/
 *.joblib
 *.pkl
+
+# Root package files (Next.js app is in dynamic-pricing-dashboard/)
+package.json
+package-lock.json

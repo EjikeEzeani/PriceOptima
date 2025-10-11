@@ -51,6 +51,9 @@ render_super_minimal.py
 Procfile
 Dockerfile
 
+# Duplicate folder (should be removed)
+dynamic-pricing-dashboard/
+
 # IDE
 .vscode/
 .idea/

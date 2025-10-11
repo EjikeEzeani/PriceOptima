@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd dynamic-pricing-dashboard && npm run build",
+  "outputDirectory": "dynamic-pricing-dashboard/.next",
+  "installCommand": "cd dynamic-pricing-dashboard && npm install",
+  "framework": "nextjs",
+  "functions": {
+    "dynamic-pricing-dashboard/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}

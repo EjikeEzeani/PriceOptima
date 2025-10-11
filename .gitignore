@@ -51,8 +51,9 @@ render_super_minimal.py
 Procfile
 Dockerfile
 
-# Duplicate folder (should be removed)
+# Duplicate folder (should be removed) - FORCE EXCLUDE
 dynamic-pricing-dashboard/
+**/dynamic-pricing-dashboard/
 
 # IDE
 .vscode/

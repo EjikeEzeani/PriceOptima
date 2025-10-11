@@ -171,7 +171,7 @@ export default function HomePage() {
   }
 
   if (showAnalytics) {
-    return (
+  return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-6 py-4">
@@ -187,7 +187,7 @@ export default function HomePage() {
                 <div>
                   <h1 className="text-2xl font-bold text-primary">PriceOptima</h1>
                   <p className="text-sm text-muted-foreground">Real-Time Analytics Dashboard</p>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -267,8 +267,8 @@ export default function HomePage() {
               <h2 className="text-4xl font-bold text-foreground mb-4">Why retailers choose PriceOptima</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Transform your pricing strategy with AI-powered insights that deliver real business results
-              </p>
-            </div>
+          </p>
+        </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               <Card className="p-8 text-center hover:shadow-lg transition-shadow">
@@ -378,7 +378,7 @@ export default function HomePage() {
                   <Globe className="h-4 w-4 mr-2" />
                   GDPR Compliant
                 </Badge>
-              </div>
+          </div>
 
               <Card className="max-w-2xl mx-auto p-6 bg-card/80 backdrop-blur-sm">
                 <div className="flex items-center space-x-4 mb-4">
@@ -459,9 +459,9 @@ export default function HomePage() {
                     </div>
                   </Card>
                 </motion.div>
-              ))}
-            </div>
-          </div>
+          ))}
+        </div>
+              </div>
         </section>
 
         <section className="py-20 bg-primary text-primary-foreground">

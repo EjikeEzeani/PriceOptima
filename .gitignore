@@ -49,3 +49,8 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Machine Learning Models (too large for GitHub)
+models/
+*.joblib
+*.pkl

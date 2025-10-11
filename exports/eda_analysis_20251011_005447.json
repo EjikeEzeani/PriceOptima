@@ -1,0 +1,80 @@
+{
+  "overview": {
+    "category_distribution": {
+      "Product A": 1,
+      "Product B": 1,
+      "Product C": 1,
+      "Product D": 1,
+      "Product E": 1,
+      "Product F": 1,
+      "Product G": 1,
+      "Product H": 1,
+      "Product I": 1,
+      "Product J": 1
+    },
+    "revenue_vs_waste": {
+      "revenue": [
+        1050.0,
+        1250.0,
+        1150.0,
+        1143.75,
+        1335.0,
+        960.0,
+        1200.0,
+        900.0,
+        1125.0,
+        990.0
+      ],
+      "waste": [
+        100,
+        50,
+        200,
+        75,
+        150,
+        80,
+        40,
+        120,
+        60,
+        45
+      ]
+    }
+  },
+  "trends": {
+    "sales_over_time": [
+      1050.0,
+      1250.0,
+      1150.0,
+      1143.75,
+      1335.0,
+      960.0,
+      1200.0,
+      900.0,
+      1125.0,
+      990.0
+    ]
+  },
+  "correlations": {
+    "price_quantity": -0.8521660323994218,
+    "price_revenue": 0.25454447711582756
+  },
+  "insights": [
+    "Average price: $15.57 (±$8.12)",
+    "Total revenue: $11,103.75 (avg: $1110.38)",
+    "Total quantity sold: 920 units (avg: 92.0)",
+    "Strong negative correlation between price and quantity - price sensitivity detected",
+    "Top performing category: Product A (1 items)"
+  ],
+  "recommendations": [
+    "High price variability detected - consider price standardization",
+    "Strong revenue performance - consider expansion opportunities",
+    "Moderate volume - focus on demand generation",
+    "Consider price optimization to balance volume and margin",
+    "Focus marketing efforts on Product A category"
+  ],
+  "summary_stats": {
+    "total_records": 10,
+    "numeric_columns": 3,
+    "categorical_columns": 2,
+    "data_quality": "Limited"
+  }
+}

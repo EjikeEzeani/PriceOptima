@@ -784,7 +784,7 @@ def train_ml_model(df, model_type="random_forest"):
                 },
                 "error": f"Future forecasting failed: {str(e)}"
             }
-
+        
         results = {
             "modelId": model_type,
             "metrics": {

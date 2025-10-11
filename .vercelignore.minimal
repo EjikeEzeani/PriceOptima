@@ -1,9 +1,0 @@
-# Minimal Vercel ignore
-node_modules/
-.next/
-*.log
-.env*
-.git/
-.gitignore
-README.md
-*.md

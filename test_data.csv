@@ -1,6 +1,11 @@
-Date,Product,Category,Price,Quantity,Revenue
-2024-01-01,Rice 5kg,Grains,2500,45,112500
-2024-01-01,Tomatoes 1kg,Vegetables,800,120,96000
-2024-01-02,Bread 1kg,Bakery,300,200,60000
-2024-01-02,Milk 1L,Dairy,500,150,75000
-2024-01-03,Chicken 1kg,Meat,1200,80,96000
+product,price,quantity,revenue,category
+Product A,10.50,100,1050,Electronics
+Product B,25.00,50,1250,Clothing
+Product C,5.75,200,1150,Food
+Product D,15.25,75,1143.75,Electronics
+Product E,8.90,150,1335,Clothing
+Product F,12.00,80,960,Food
+Product G,30.00,40,1200,Electronics
+Product H,7.50,120,900,Clothing
+Product I,18.75,60,1125,Food
+Product J,22.00,45,990,Electronics

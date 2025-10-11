@@ -1,6 +1,15 @@
+import './globals.css'
+
 export const metadata = {
   title: 'PriceOptima Dashboard',
-  description: 'Dynamic Pricing Analytics Application'
+  description: 'AI-Powered Dynamic Pricing Analytics Platform',
+  keywords: 'pricing, analytics, AI, machine learning, optimization, revenue',
+  authors: [{ name: 'PriceOptima Team' }],
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
@@ -9,12 +18,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body>{children}</body>
+    <html lang="en" className="h-full">
+      <body className="h-full">{children}</body>
     </html>
   )
 }

@@ -104,14 +104,8 @@ docs/
 .git/
 .gitignore
 
-# Package files
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
 # Large data files
 *.csv
-*.json
 data/
 exports/
 models/

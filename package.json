@@ -1,0 +1,17 @@
+{
+  "name": "priceoptima",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd dynamic-pricing-dashboard && npm run dev",
+    "build": "cd dynamic-pricing-dashboard && npm run build",
+    "start": "cd dynamic-pricing-dashboard && npm run start",
+    "install": "cd dynamic-pricing-dashboard && npm install"
+  },
+  "workspaces": [
+    "dynamic-pricing-dashboard"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

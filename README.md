@@ -1,6 +1,13 @@
-# PriceOptima - Dynamic Pricing Analytics Platform
+# PriceOptima 2.0 - Dynamic Pricing Analytics Platform
 
-A comprehensive AI-powered dynamic pricing analytics platform built with Next.js frontend and FastAPI backend.
+A comprehensive AI-powered dynamic pricing analytics platform built with Next.js frontend and FastAPI backend. This is the cleaned and optimized version of the PriceOptima project.
+
+## What's New in PriceOptima 2.0
+
+- **Clean Repository**: Removed 100+ redundant files and organized structure
+- **Optimized Build**: Streamlined for faster deployment and development
+- **Fixed Git Issues**: Resolved .gitignore problems that were blocking commits
+- **Professional Structure**: Clean, maintainable codebase ready for production
 
 ## Features
 

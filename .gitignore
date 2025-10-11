@@ -50,7 +50,7 @@ backend/models/
 backend/*.joblib
 backend/*.pkl
 api_backend.py
-requirements.txt
+backend/requirements.txt
 Dockerfile
 
 # Duplicate folder (should be removed) - FORCE EXCLUDE

@@ -1,0 +1,5 @@
+# Root requirements.txt that points to backend requirements
+# This ensures Render can find the requirements file
+
+# Copy all requirements from backend/requirements.txt
+-r backend/requirements.txt

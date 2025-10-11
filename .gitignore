@@ -114,19 +114,35 @@ jspm_packages/
 tmp/
 temp/
 
-# Test files
-test_*
-*_test.*
-*.test.*
+# Test files (be more specific)
+test_*.py
+*_test.py
+*.test.py
+test_*.js
+*_test.js
+*.test.js
 
-# Large data files
-*.csv
-*.json
-exports/
+# Large data files (be more specific)
+data/*.csv
+exports/*.csv
+*.log
+*.backup
 
-# Python files (backend)
-*.py
-requirements*.txt
-venv/
+# Python files (backend) - be more specific
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+.env
+
+# Keep important files
+!working_backend.py
+!api_backend.py
+!requirements.txt
+!package.json
+!next.config.mjs
+!vercel.json
+!tsconfig.json

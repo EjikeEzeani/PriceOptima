@@ -42,13 +42,15 @@ models/
 *.joblib
 *.pkl
 
-# Backend files
-backend/
+# Backend files (excluding deployment files)
+backend/__pycache__/
+backend/venv/
+backend/.venv/
+backend/models/
+backend/*.joblib
+backend/*.pkl
 api_backend.py
 requirements.txt
-backend_requirements_super_minimal.txt
-render_super_minimal.py
-Procfile
 Dockerfile
 
 # Duplicate folder (should be removed) - FORCE EXCLUDE

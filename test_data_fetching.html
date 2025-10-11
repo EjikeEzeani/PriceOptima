@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Fetching Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Data Fetching Test - Backend API Connection</h1>
+    
+    <div class="test-section">
+        <h2>Backend Health Check</h2>
+        <div id="health-check">Testing...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Data Upload Test</h2>
+        <div id="upload-test">Testing...</div>
+        <input type="file" id="file-input" accept=".csv" />
+        <button onclick="testUpload()">Test Upload</button>
+    </div>
+
+    <div class="test-section">
+        <h2>API Response</h2>
+        <pre id="api-response">No data yet...</pre>
+    </div>
+
+    <script>
+        // Test backend health
+        async function testHealth() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/health');
+                const data = await response.json();
+                document.getElementById('health-check').innerHTML = 
+                    `<div class="success">✅ Backend is running: ${data.message}</div>`;
+                return true;
+            } catch (error) {
+                document.getElementById('health-check').innerHTML = 
+                    `<div class="error">❌ Backend connection failed: ${error.message}</div>`;
+                return false;
+            }
+        }
+
+        // Test data upload
+        async function testUpload() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                document.getElementById('upload-test').innerHTML = 
+                    `<div class="warning">⚠️ Please select a CSV file first</div>`;
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                document.getElementById('upload-test').innerHTML = 
+                    `<div class="warning">⏳ Uploading file: ${file.name}...</div>`;
+
+                const response = await fetch('http://127.0.0.1:8000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('upload-test').innerHTML = 
+                        `<div class="success">✅ Upload successful! Records: ${data.summary?.totalRecords || 'N/A'}</div>`;
+                    document.getElementById('api-response').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    const errorText = await response.text();
+                    document.getElementById('upload-test').innerHTML = 
+                        `<div class="error">❌ Upload failed: ${response.status} - ${errorText}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('upload-test').innerHTML = 
+                    `<div class="error">❌ Upload error: ${error.message}</div>`;
+            }
+        }
+
+        // Test EDA analysis
+        async function testEDA() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/eda', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('eda-test').innerHTML = 
+                        `<div class="success">✅ EDA analysis successful!</div>`;
+                    console.log('EDA Results:', data);
+                } else {
+                    const errorText = await response.text();
+                    document.getElementById('eda-test').innerHTML = 
+                        `<div class="error">❌ EDA failed: ${response.status} - ${errorText}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('eda-test').innerHTML = 
+                    `<div class="error">❌ EDA error: ${error.message}</div>`;
+            }
+        }
+
+        // Initialize tests
+        window.onload = async function() {
+            const healthOk = await testHealth();
+            if (healthOk) {
+                // Add EDA test section
+                const edaSection = document.createElement('div');
+                edaSection.className = 'test-section';
+                edaSection.innerHTML = `
+                    <h2>EDA Analysis Test</h2>
+                    <div id="eda-test">Testing...</div>
+                    <button onclick="testEDA()">Test EDA</button>
+                `;
+                document.body.appendChild(edaSection);
+                
+                // Test EDA
+                await testEDA();
+            }
+        };
+    </script>
+</body>
+</html>

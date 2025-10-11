@@ -1,0 +1,40 @@
+# config.yaml
+data:
+  raw_dir: data/raw
+  processed_dir: C:/Users/USER/Documents/PriceOptima/exports
+  merged_filename: merged_input_dataset.parquet
+
+simulation:
+  markets: ["Lagos","Kano","Abuja"]
+  seed: 42
+  months: 36   # months to simulate when synthetic WFP not available
+  start_date: "2019-01-01"
+
+base_prices:
+  Lagos: 320
+  Kano: 220
+  Abuja: 280
+
+elasticities:
+  Tomatoes: 1.2
+  Onions: 1.0
+  Rice: 0.5
+  Beans: 0.7
+  Fish: 1.1
+
+xgboost:
+  eta: 0.05
+  max_depth: 6
+  subsample: 0.8
+  nrounds: 1000
+  early_stopping_rounds: 50
+
+dqn:
+  learning_rate: 1e-4
+  batch_size: 64
+  gamma: 0.99
+  episodes: 2000
+  replay_size: 200000
+  eps_start: 1.0
+  eps_min: 0.05
+  eps_decay: 0.995

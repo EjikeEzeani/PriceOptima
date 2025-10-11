@@ -1,62 +1,33 @@
-# PriceOptima 2.0 - Dynamic Pricing Analytics Platform
+# Dynamic Pricing for Waste Reduction - Reproducible Project
 
-A comprehensive AI-powered dynamic pricing analytics platform built with Next.js frontend and FastAPI backend. This is the cleaned and optimized version of the PriceOptima project.
+## Quick start (VS Code)
 
-## What's New in PriceOptima 2.0
+1. Create project folder and subfolders (data/raw, data/processed, notebooks, src, src/envs, models, figures, logs).
+2. Copy files from this repository into project_root.
+3. Create and activate venv:
+   - `python -m venv venv`
+   - macOS/Linux: `source venv/bin/activate`
+   - Windows: `venv\Scripts\activate`
+4. Install requirements:
+   - `pip install -r requirements.txt`
+5. Generate merged dataset:
+   - Option A (script): `python src/generate_simulated_pos.py --seed 42`
+   - Option B (notebook): open `notebooks/01_data_merge.py` in VS Code and run all cells.
+6. Preprocess & run pipeline:
+   - Run notebooks in order:
+     - `01_data_merge.py`
+     - `02_preprocessing.py`
+     - `03_eda.py`
+     - `04_supervised_models.py`
+     - `05_explainability.py`
+     - `06_rl_environment.py`
+     - `07_rl_training.py`
+     - `08_evaluation.py`
+   - Or run end-to-end: `python src/run_all.py`
+7. Check `data/processed`, `models`, `figures`, `logs` for outputs.
 
-- **Clean Repository**: Removed 100+ redundant files and organized structure
-- **Optimized Build**: Streamlined for faster deployment and development
-- **Fixed Git Issues**: Resolved .gitignore problems that were blocking commits
-- **Professional Structure**: Clean, maintainable codebase ready for production
+## Notes
+- Files are deterministic where possible (random seeds).
+- If you have the real WFP CSV, place it in `data/raw/wfp_food_prices.csv`; otherwise the script will synthesize WFP-style data.
+- See `validation.md` for expected metrics and troubleshooting tips.
 
-## Features
-
-- **Data Analysis**: Comprehensive EDA with statistical insights and trend analysis
-- **AI Models**: Machine learning models for predictive pricing and optimization
-- **RL Simulation**: Reinforcement learning for dynamic pricing strategies
-- **Export Reports**: Generate comprehensive reports in multiple formats
-- **Real-time Analytics**: Live monitoring and optimization recommendations
-- **Performance Metrics**: Track revenue growth and optimization effectiveness
-
-## Quick Start
-
-### Frontend (Next.js)
-```bash
-npm install
-npm run dev
-```
-
-### Backend (FastAPI)
-```bash
-pip install -r requirements.txt
-python -m uvicorn api_backend:app --host 127.0.0.1 --port 8002 --reload
-```
-
-## Deployment
-
-- **Frontend**: Deploy to Vercel
-- **Backend**: Deploy to Render
-
-## Project Structure
-
-```
-├── app/                    # Next.js frontend
-├── src/                    # Python source code
-├── data/                   # Data files
-├── models/                 # Trained models
-├── exports/                # Generated reports
-└── figures/                # Visualizations
-```
-
-## API Endpoints
-
-- `GET /health` - Health check
-- `POST /upload` - Upload data
-- `GET /eda` - Exploratory data analysis
-- `GET /ml` - Machine learning predictions
-- `GET /rl` - Reinforcement learning simulation
-- `GET /export` - Export reports
-
-## License
-
-MIT License

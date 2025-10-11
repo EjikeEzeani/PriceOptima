@@ -1,45 +1,27 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Force static export for Vercel
-  output: 'export',
-  trailingSlash: true,
-  distDir: 'out',
-  
-  // Disable server-side features for static export
-  images: {
-    unoptimized: true
-  },
-  
-  // Disable problematic features
   eslint: {
-    ignoreDuringBuilds: true
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true
+    ignoreBuildErrors: true,
   },
-  
-  // Minimal experimental features
-  experimental: {
-    optimizeCss: false
+  images: {
+    unoptimized: true,
   },
-  
-  // Webpack configuration for static build
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        crypto: false,
-        stream: false,
-        util: false,
-        buffer: false,
-        process: false
-      }
+  async rewrites() {
+    // Only proxy to local backend in development
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://127.0.0.1:8000/:path*',
+        },
+      ]
     }
-    return config
-  }
+    // In production, the backend should be deployed separately
+    return []
+  },
 }
 
 export default nextConfig

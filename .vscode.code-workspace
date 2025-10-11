@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": ".vscode"
+		},
+		{
+			"path": "data"
+		},
+		{
+			"path": "figures"
+		},
+		{
+			"path": "logs"
+		},
+		{
+			"path": "models"
+		},
+		{
+			"path": "notebooks"
+		},
+		{
+			"path": "src"
+		},
+		{
+			"path": "venv"
+		}
+	]
+}

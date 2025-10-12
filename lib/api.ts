@@ -3,10 +3,8 @@
  * Centralized API endpoints and data fetching utilities
  */
 
-// API Base URL configuration
-// In development: use localhost backend
-// In production: use deployed backend URL
-const API_BASE_URL = (() => {
+// API Base URL configuration with fallback support
+const getApiBaseUrl = () => {
   // If NEXT_PUBLIC_API_BASE_URL is set, use it (for production)
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -19,7 +17,17 @@ const API_BASE_URL = (() => {
   
   // Server-side rendering fallback
   return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8001' : 'https://priceoptima.onrender.com';
-})();
+};
+
+// Primary and fallback API URLs for better reliability
+const PRIMARY_API_URL = getApiBaseUrl();
+const FALLBACK_API_URLS = [
+  'https://priceoptima.onrender.com',
+  'https://priceoptima-backend.onrender.com',
+  'https://priceoptima-1.onrender.com'
+];
+
+const API_BASE_URL = PRIMARY_API_URL;
 
 export interface UploadResponse {
   files: Array<{
@@ -109,16 +117,80 @@ export interface BackendStatus {
 
 class APIClient {
   private baseURL: string;
+  private fallbackURLs: string[];
+  private isHealthy: boolean = true;
+  private lastHealthCheck: number = 0;
+  private healthCheckInterval: number = 30000; // 30 seconds
 
-  constructor(baseURL: string = API_BASE_URL) {
+  constructor(baseURL: string = API_BASE_URL, fallbackURLs: string[] = FALLBACK_API_URLS) {
     this.baseURL = baseURL;
+    this.fallbackURLs = fallbackURLs;
+  }
+
+  private async checkHealth(): Promise<boolean> {
+    const now = Date.now();
+    if (now - this.lastHealthCheck < this.healthCheckInterval) {
+      return this.isHealthy;
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      });
+      
+      this.isHealthy = response.ok;
+      this.lastHealthCheck = now;
+      
+      if (!this.isHealthy) {
+        console.warn(`Primary API ${this.baseURL} is unhealthy`);
+      }
+      
+      return this.isHealthy;
+    } catch (error) {
+      console.warn(`Health check failed for ${this.baseURL}:`, error);
+      this.isHealthy = false;
+      this.lastHealthCheck = now;
+      return false;
+    }
+  }
+
+  private async findHealthyEndpoint(): Promise<string> {
+    // Check primary endpoint first
+    if (await this.checkHealth()) {
+      return this.baseURL;
+    }
+
+    // Try fallback endpoints
+    for (const fallbackUrl of this.fallbackURLs) {
+      try {
+        const response = await fetch(`${fallbackUrl}/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(5000)
+        });
+        
+        if (response.ok) {
+          console.log(`Using fallback API: ${fallbackUrl}`);
+          return fallbackUrl;
+        }
+      } catch (error) {
+        console.warn(`Fallback API ${fallbackUrl} is also unhealthy:`, error);
+      }
+    }
+
+    // If all endpoints fail, return primary (will show error to user)
+    console.error('All API endpoints are unhealthy');
+    return this.baseURL;
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    const healthyUrl = await this.findHealthyEndpoint();
+    const url = `${healthyUrl}${endpoint}`;
     
     // Only set Content-Type for non-FormData requests
     const defaultHeaders: Record<string, string> = {};
@@ -172,8 +244,9 @@ class APIClient {
       }
     }
 
-    // If all retries failed, throw the last error
-    throw lastError || new Error(`API request failed after ${maxRetries} attempts`);
+    // Enhanced error message for better debugging
+    const errorMessage = lastError?.message || 'Unknown error';
+    throw new Error(`API request failed after ${maxRetries} attempts. Last error: ${errorMessage}. Please check if the backend service is running.`);
   }
 
   // Upload data (with enhanced error handling and timeout)
@@ -181,14 +254,17 @@ class APIClient {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Find healthy endpoint for upload
+    const healthyUrl = await this.findHealthyEndpoint();
+
     // Create abort controller for timeout
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60_000); // 60s timeout
 
     try {
-      console.log(`Uploading file: ${file.name} (${file.size} bytes) to ${this.baseURL}/upload`);
+      console.log(`Uploading file: ${file.name} (${file.size} bytes) to ${healthyUrl}/upload`);
       
-      const response = await fetch(`${this.baseURL}/upload`, {
+      const response = await fetch(`${healthyUrl}/upload`, {
         method: 'POST',
         body: formData,
         signal: controller.signal,
@@ -271,12 +347,14 @@ class APIClient {
   // Health Check with detailed logging
   async healthCheck(): Promise<boolean> {
     try {
-      console.log(`Health check: Testing connection to ${this.baseURL}/health`);
-      const response = await fetch(`${this.baseURL}/health`, {
+      const healthyUrl = await this.findHealthyEndpoint();
+      console.log(`Health check: Testing connection to ${healthyUrl}/health`);
+      const response = await fetch(`${healthyUrl}/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
       });
       
       if (response.ok) {

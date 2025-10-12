@@ -1,6 +1,7 @@
 import type React from "react"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { ErrorProvider } from "@/components/error-handler"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -50,7 +51,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background font-sans">{children}</body>
+      <body className="min-h-screen bg-background font-sans">
+        <ErrorProvider>
+          {children}
+        </ErrorProvider>
+      </body>
     </html>
   )
 }

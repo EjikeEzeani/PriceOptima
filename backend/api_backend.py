@@ -53,6 +53,9 @@ _allow_all = os.getenv("PRICEOPTIMA_ALLOW_ALL_ORIGINS", "1").strip() == "1"
 _cors_allow_origins = ["*"] if _allow_all else list(dict.fromkeys(DEFAULT_CORS_ORIGINS))
 _cors_allow_credentials = False if _allow_all else True
 
+# Log CORS configuration for debugging
+print(f"CORS Configuration: allow_all={_allow_all}, origins={_cors_allow_origins[:3]}...")  # Show first 3 origins
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_allow_origins,

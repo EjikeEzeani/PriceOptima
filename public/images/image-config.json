@@ -1,95 +1,82 @@
 {
   "testimonials": {
-    "adebayo-ogundimu": {
-      "name": "Adebayo Ogundimu",
-      "description": "Nigerian male, Lagos - Store Manager",
+    "marcus-johnson": {
+      "name": "Marcus Johnson",
+      "description": "African American male, Atlanta - Store Manager",
       "current": "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/adebayo-ogundimu.jpg",
-      "ethnicity": "Nigerian",
+      "local_path": "/images/testimonials/marcus-johnson.jpg",
+      "ethnicity": "African American",
       "gender": "male",
-      "region": "Lagos"
+      "region": "Atlanta"
     },
-    "chioma-okwu": {
-      "name": "Chioma Okwu",
-      "description": "Dark Igbo lady, Port Harcourt - Operations Director",
+    "keisha-williams": {
+      "name": "Keisha Williams",
+      "description": "African American female, Houston - Operations Director",
       "current": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/chioma-okwu.jpg",
-      "ethnicity": "Igbo",
+      "local_path": "/images/testimonials/keisha-williams.jpg",
+      "ethnicity": "African American",
       "gender": "female",
-      "region": "Port Harcourt"
+      "region": "Houston"
     },
-    "grace-okafor": {
-      "name": "Grace Okafor",
-      "description": "Igbo lady, Abuja - Regional Manager",
+    "jasmine-davis": {
+      "name": "Jasmine Davis",
+      "description": "African American female, Chicago - Regional Manager",
       "current": "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/grace-okafor.jpg",
-      "ethnicity": "Igbo",
+      "local_path": "/images/testimonials/jasmine-davis.jpg",
+      "ethnicity": "African American",
       "gender": "female",
-      "region": "Abuja"
+      "region": "Chicago"
     },
-    "emeka-nwosu": {
-      "name": "Emeka Nwosu",
-      "description": "Nigerian male CEO, Kano",
+    "david-thompson": {
+      "name": "David Thompson",
+      "description": "African American male CEO, Detroit",
       "current": "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/emeka-nwosu.jpg",
-      "ethnicity": "Nigerian",
+      "local_path": "/images/testimonials/david-thompson.jpg",
+      "ethnicity": "African American",
       "gender": "male",
-      "region": "Kano"
+      "region": "Detroit"
     },
-    "amina-hassan": {
-      "name": "Amina Hassan",
-      "description": "Black Fulani lady, Kaduna - Store Owner",
+    "michelle-brown": {
+      "name": "Michelle Brown",
+      "description": "African American female, Baltimore - Store Owner",
       "current": "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/amina-hassan.jpg",
-      "ethnicity": "Fulani",
+      "local_path": "/images/testimonials/michelle-brown.jpg",
+      "ethnicity": "African American",
       "gender": "female",
-      "region": "Kaduna"
+      "region": "Baltimore"
     },
-    "kwame-asante": {
-      "name": "Kwame Asante",
-      "description": "Black African man from Kumasi, Ghana - Operations Manager",
+    "james-wilson": {
+      "name": "James Wilson",
+      "description": "African American male, Los Angeles - Operations Manager",
       "current": "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/kwame-asante.jpg",
-      "ethnicity": "Ghanaian",
+      "local_path": "/images/testimonials/james-wilson.jpg",
+      "ethnicity": "African American",
       "gender": "male",
-      "region": "Kumasi"
-    },
-    "tunde-adebayo": {
-      "name": "Tunde Adebayo",
-      "description": "Nigerian male, IT Manager - Separate from Adebayo Ogundimu",
-      "current": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
-      "alternatives": [
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
-        "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
-      ],
-      "local_path": "/images/testimonials/tunde-adebayo.jpg",
-      "ethnicity": "Nigerian",
-      "gender": "male",
-      "region": "Nigeria"
+      "region": "Los Angeles"
     }
   },
   "features": {

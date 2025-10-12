@@ -156,12 +156,12 @@ class ImageManager {
    */
   private getDefaultImage(key: string): string {
     const defaults: Record<string, string> = {
-      'marcus-johnson': 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
-      'keisha-williams': 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
-      'jasmine-davis': 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
-      'david-thompson': 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
-      'michelle-brown': 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
-      'james-wilson': 'https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
+      'adebayo-ogundimu': 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
+      'chioma-okwu': 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
+      'grace-okafor': 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
+      'emeka-nwosu': 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
+      'amina-hassan': 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
+      'kwame-asante': 'https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80',
     };
     
     return defaults[key] || 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80';

@@ -1,82 +1,82 @@
 {
   "testimonials": {
-    "marcus-johnson": {
-      "name": "Marcus Johnson",
-      "description": "African American male, Atlanta - Store Manager",
+    "adebayo-ogundimu": {
+      "name": "Adebayo Ogundimu",
+      "description": "Nigerian male, Lagos - Store Manager",
       "current": "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/marcus-johnson.jpg",
-      "ethnicity": "African American",
+      "local_path": "/images/testimonials/adebayo-ogundimu.jpg",
+      "ethnicity": "Nigerian",
       "gender": "male",
-      "region": "Atlanta"
+      "region": "Lagos"
     },
-    "keisha-williams": {
-      "name": "Keisha Williams",
-      "description": "African American female, Houston - Operations Director",
+    "chioma-okwu": {
+      "name": "Chioma Okwu",
+      "description": "Dark Igbo lady, Port Harcourt - Operations Director",
       "current": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/keisha-williams.jpg",
-      "ethnicity": "African American",
+      "local_path": "/images/testimonials/chioma-okwu.jpg",
+      "ethnicity": "Igbo",
       "gender": "female",
-      "region": "Houston"
+      "region": "Port Harcourt"
     },
-    "jasmine-davis": {
-      "name": "Jasmine Davis",
-      "description": "African American female, Chicago - Regional Manager",
+    "grace-okafor": {
+      "name": "Grace Okafor",
+      "description": "Igbo lady, Abuja - Regional Manager",
       "current": "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/jasmine-davis.jpg",
-      "ethnicity": "African American",
+      "local_path": "/images/testimonials/grace-okafor.jpg",
+      "ethnicity": "Igbo",
       "gender": "female",
-      "region": "Chicago"
+      "region": "Abuja"
     },
-    "david-thompson": {
-      "name": "David Thompson",
-      "description": "African American male CEO, Detroit",
+    "emeka-nwosu": {
+      "name": "Emeka Nwosu",
+      "description": "Nigerian male CEO, Kano",
       "current": "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/david-thompson.jpg",
-      "ethnicity": "African American",
+      "local_path": "/images/testimonials/emeka-nwosu.jpg",
+      "ethnicity": "Nigerian",
       "gender": "male",
-      "region": "Detroit"
+      "region": "Kano"
     },
-    "michelle-brown": {
-      "name": "Michelle Brown",
-      "description": "African American female, Baltimore - Store Owner",
+    "amina-hassan": {
+      "name": "Amina Hassan",
+      "description": "Black Fulani lady, Kaduna - Store Owner",
       "current": "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/michelle-brown.jpg",
-      "ethnicity": "African American",
+      "local_path": "/images/testimonials/amina-hassan.jpg",
+      "ethnicity": "Fulani",
       "gender": "female",
-      "region": "Baltimore"
+      "region": "Kaduna"
     },
-    "james-wilson": {
-      "name": "James Wilson",
-      "description": "African American male, Los Angeles - Operations Manager",
+    "kwame-asante": {
+      "name": "Kwame Asante",
+      "description": "Black African man from Kumasi, Ghana - Operations Manager",
       "current": "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
       "alternatives": [
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
       ],
-      "local_path": "/images/testimonials/james-wilson.jpg",
-      "ethnicity": "African American",
+      "local_path": "/images/testimonials/kwame-asante.jpg",
+      "ethnicity": "Ghanaian",
       "gender": "male",
-      "region": "Los Angeles"
+      "region": "Kumasi"
     }
   },
   "features": {

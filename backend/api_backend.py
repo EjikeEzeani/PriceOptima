@@ -38,6 +38,7 @@ DEFAULT_CORS_ORIGINS = [
     "https://priceoptima-2-0-git-main-ejikeezeani.vercel.app",  # Vercel preview domain
     "https://priceoptima-2-0-git-develop-ejikeezeani.vercel.app",  # Vercel branch domain
     "https://priceoptima-frontend.onrender.com",  # Render frontend domain
+    "https://priceoptima-git-main-ezeaniejike-1932s-projects.vercel.app",  # Current Vercel domain
 ]
 
 # Additional origins via env, comma-separated (e.g., https://app.example.com,https://www.example.com)
@@ -815,59 +816,103 @@ def train_ml_model(df, model_type="random_forest"):
 
 @app.post("/upload")
 async def upload_data(file: UploadFile = File(...)):
+    import tempfile
+    import logging
+    
+    logger = logging.getLogger("uvicorn.error")
+    
     try:
+        logger.info(f"Upload request received: {file.filename} ({file.content_type})")
+        
         # Validate file type by extension and content type
         filename_lower = (file.filename or "").lower()
         if not filename_lower.endswith(".csv") and (file.content_type or "").lower() != "text/csv":
+            logger.warning(f"Invalid file type: {file.filename} ({file.content_type})")
             raise HTTPException(status_code=400, detail="Only CSV files are accepted")
 
         # Read bytes and size check
         content = await file.read()
-        if len(content) > MAX_FILE_SIZE_BYTES:
+        file_size = len(content)
+        logger.info(f"File size: {file_size} bytes")
+        
+        if file_size > MAX_FILE_SIZE_BYTES:
+            logger.warning(f"File too large: {file_size} bytes")
             raise HTTPException(status_code=400, detail="File too large. Max size is 50 MB")
 
-        # Parse CSV
-        df = pd.read_csv(io.BytesIO(content))
-        
-        # Preprocess (auto on upload)
-        processed = preprocess_data(df)
-        
-        # Store data using the new data store
-        set_data("uploaded_data", df)
-        set_data("processed_data", processed)
-        set_data("eda_results_cache", None)
-        set_data("ml_results_cache", None)
-        set_data("eda_completed", False)
-        
-        headers = list(processed.columns)
-        rows = processed.to_dict(orient="records")
-        
-        # Calculate summary statistics
-        summary = {
-            "totalRecords": len(processed),
-            "dateRange": f"{processed['Date'].min()} to {processed['Date'].max()}" if 'Date' in processed.columns and len(processed) else "N/A",
-            "products": processed['Product'].nunique() if 'Product' in processed.columns else 0,
-            "categories": processed['Category'].nunique() if 'Category' in processed.columns else 0,
-            "totalRevenue": float(processed['Revenue'].sum()) if 'Revenue' in processed.columns and not (np.isnan(processed['Revenue'].sum()) or np.isinf(processed['Revenue'].sum())) else 0,
-            "avgPrice": float(processed['Price'].mean()) if 'Price' in processed.columns and not (np.isnan(processed['Price'].mean()) or np.isinf(processed['Price'].mean())) else 0,
-        }
-        preview = rows[:5]
-        
-        return {
-            "files": [{"name": file.filename, "size": file.size, "type": file.content_type}],
-            "headers": headers,
-            "rows": rows[:1000],
-            "summary": summary,
-            "preview": preview,
-            "totalRows": len(processed)
-        }
-    except HTTPException as he:
-        raise he
+        # Use temporary file to handle large uploads safely
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+            tmp.write(content)
+            tmp.flush()
+            tmp_path = tmp.name
+
+        try:
+            # Parse CSV with better error handling
+            logger.info("Parsing CSV file...")
+            df = pd.read_csv(tmp_path, low_memory=False)
+            
+            # Basic validation of required columns
+            required_columns = {"Date", "Product Name", "Category", "Price", "Quantity Sold", "Revenue"}
+            available_columns = set(df.columns)
+            missing_columns = required_columns - available_columns
+            
+            if missing_columns:
+                logger.warning(f"Missing required columns: {missing_columns}")
+                raise HTTPException(
+                    status_code=422, 
+                    detail=f"Missing required columns: {', '.join(missing_columns)}. Available columns: {', '.join(available_columns)}"
+                )
+            
+            logger.info(f"CSV parsed successfully: {len(df)} rows, {len(df.columns)} columns")
+            
+            # Preprocess (auto on upload)
+            logger.info("Preprocessing data...")
+            processed = preprocess_data(df)
+            
+            # Store data using the new data store
+            set_data("uploaded_data", df)
+            set_data("processed_data", processed)
+            set_data("eda_results_cache", None)
+            set_data("ml_results_cache", None)
+            set_data("eda_completed", False)
+            
+            headers = list(processed.columns)
+            rows = processed.to_dict(orient="records")
+            
+            # Calculate summary statistics
+            summary = {
+                "totalRecords": len(processed),
+                "dateRange": f"{processed['Date'].min()} to {processed['Date'].max()}" if 'Date' in processed.columns and len(processed) else "N/A",
+                "products": processed['Product'].nunique() if 'Product' in processed.columns else 0,
+                "categories": processed['Category'].nunique() if 'Category' in processed.columns else 0,
+                "totalRevenue": float(processed['Revenue'].sum()) if 'Revenue' in processed.columns and not (np.isnan(processed['Revenue'].sum()) or np.isinf(processed['Revenue'].sum())) else 0,
+                "avgPrice": float(processed['Price'].mean()) if 'Price' in processed.columns and not (np.isnan(processed['Price'].mean()) or np.isinf(processed['Price'].mean())) else 0,
+            }
+            preview = rows[:5]
+            
+            logger.info(f"Upload successful: {len(processed)} records processed")
+            
+            return {
+                "files": [{"name": file.filename, "size": file_size, "type": file.content_type}],
+                "headers": headers,
+                "rows": rows[:1000],
+                "summary": summary,
+                "preview": preview,
+                "totalRows": len(processed)
+            }
+            
+        finally:
+            # Clean up temporary file
+            try:
+                os.unlink(tmp_path)
+            except Exception as e:
+                logger.warning(f"Failed to delete temporary file {tmp_path}: {e}")
+                
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        return JSONResponse(
-            status_code=400,
-            content={"error": f"Failed to process file: {str(e)}"}
-        )
+        logger.exception(f"Error processing upload: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 @app.post("/eda")
 async def run_eda(request: Request):

@@ -4,12 +4,12 @@
  */
 
 // API Base URL configuration
-// In development: use Next.js proxy (/api) or localhost
+// In development: use localhost backend
 // In production: use deployed backend URL
 const API_BASE_URL = (() => {
-  // If NEXT_PUBLIC_API_URL is set, use it (for production)
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+  // If NEXT_PUBLIC_API_BASE_URL is set, use it (for production)
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
   
   // In browser (client-side), use direct backend URL in development, direct URL in production
@@ -176,63 +176,52 @@ class APIClient {
     throw lastError || new Error(`API request failed after ${maxRetries} attempts`);
   }
 
-  // Upload data (with fallbacks for alternate backends)
+  // Upload data (with enhanced error handling and timeout)
   async uploadData(file: File): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Primary endpoint used by the working backends
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000); // 60s timeout
+
     try {
-      return await this.request<UploadResponse>('/upload', {
+      console.log(`Uploading file: ${file.name} (${file.size} bytes) to ${this.baseURL}/upload`);
+      
+      const response = await fetch(`${this.baseURL}/upload`, {
         method: 'POST',
-        headers: {}, // Let browser set Content-Type for FormData
         body: formData,
+        signal: controller.signal,
+        headers: {
+          // Don't set Content-Type for FormData - let browser set it with boundary
+        },
       });
-    } catch (primaryError) {
-      // Fallback 1: older alias supported by some backends
-      try {
-        const resp = await this.request<any>('/upload-dataset', {
-          method: 'POST',
-          headers: {},
-          body: formData,
-        });
+      
+      clearTimeout(timeout);
 
-        // Normalize older responses (e.g., from app.py) to UploadResponse
-        const headers: string[] = Array.isArray(resp?.headers)
-          ? resp.headers
-          : Array.isArray(resp?.summary?.columnNames)
-            ? resp.summary.columnNames
-            : Array.isArray(resp?.preview) && resp.preview.length > 0
-              ? Object.keys(resp.preview[0])
-              : [];
-
-        const rows: any[] = Array.isArray(resp?.rows)
-          ? resp.rows
-          : Array.isArray(resp?.preview)
-            ? resp.preview
-            : [];
-
-        const uploadResponse: UploadResponse = {
-          files: resp?.files ?? [],
-          headers,
-          rows: rows.slice(0, 1000),
-          summary: {
-            totalRecords: Number(resp?.summary?.totalRecords ?? rows.length ?? 0),
-            dateRange: 'N/A',
-            products: 0,
-            categories: 0,
-            totalRevenue: 0,
-            avgPrice: 0,
-          },
-          preview: Array.isArray(resp?.preview) ? resp.preview : rows.slice(0, 5),
-          totalRows: Number(resp?.totalRows ?? rows.length ?? 0),
-        };
-
-        return uploadResponse;
-      } catch (fallbackError) {
-        // Re-throw original error with context
-        throw primaryError;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Upload failed: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
+
+      const result = await response.json();
+      console.log('Upload successful:', result);
+      return result;
+    } catch (error) {
+      clearTimeout(timeout);
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error('Upload timeout after 60 seconds');
+          throw new Error('Upload timeout - file may be too large or server is slow');
+        }
+        console.error('Upload error:', error.message);
+        throw error;
+      }
+      
+      console.error('Unknown upload error:', error);
+      throw new Error('Network error during upload - please check your connection');
     }
   }
 

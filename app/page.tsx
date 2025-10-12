@@ -64,7 +64,7 @@ const testimonials = [
       "The dynamic pricing helped us optimize inventory turnover across 50 stores. We're seeing 18% better margins.",
     rating: 5,
     metric: "18% margin improvement",
-    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Port Harcourt, Nigeria",
   },
   {
@@ -74,7 +74,7 @@ const testimonials = [
     content: "Easy to use and incredibly powerful. Our team adopted it quickly and results were immediate.",
     rating: 5,
     metric: "Immediate ROI",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Abuja, Nigeria",
   },
   {
@@ -84,7 +84,7 @@ const testimonials = [
     content: "PriceOptima transformed our pricing strategy. Customer satisfaction up 25% while profits increased.",
     rating: 5,
     metric: "25% satisfaction boost",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Kano, Nigeria",
   },
   {
@@ -104,7 +104,7 @@ const testimonials = [
     content: "The real-time analytics help us make instant pricing decisions. Revenue increased by 30%.",
     rating: 5,
     metric: "30% revenue increase",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Accra, Ghana",
   },
 ]

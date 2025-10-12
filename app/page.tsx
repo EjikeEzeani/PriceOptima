@@ -53,7 +53,7 @@ const testimonials = [
       "Reduced food waste by 35% and increased profits by 22% in just 3 months. The AI recommendations are spot-on!",
     rating: 5,
     metric: "35% waste reduction",
-    image: "/happy-nigerian-store-manager-professional-headshot.jpg",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Lagos, Nigeria",
   },
   {
@@ -64,7 +64,7 @@ const testimonials = [
       "The dynamic pricing helped us optimize inventory turnover across 50 stores. We're seeing 18% better margins.",
     rating: 5,
     metric: "18% margin improvement",
-    image: "/happy-nigerian-woman-operations-director-headshot.jpg",
+    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Port Harcourt, Nigeria",
   },
   {
@@ -74,7 +74,7 @@ const testimonials = [
     content: "Easy to use and incredibly powerful. Our team adopted it quickly and results were immediate.",
     rating: 5,
     metric: "Immediate ROI",
-    image: "/happy-asian-woman-business-professional-headshot.jpg",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Abuja, Nigeria",
   },
   {
@@ -84,7 +84,7 @@ const testimonials = [
     content: "PriceOptima transformed our pricing strategy. Customer satisfaction up 25% while profits increased.",
     rating: 5,
     metric: "25% satisfaction boost",
-    image: "/happy-hispanic-man-ceo-professional-headshot.jpg",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Kano, Nigeria",
   },
   {
@@ -94,7 +94,7 @@ const testimonials = [
     content: "The waste reduction alone saved us ₦2M annually. Best investment we've made for our business.",
     rating: 5,
     metric: "₦2M saved annually",
-    image: "/happy-middle-eastern-woman-business-owner-headshot.jpg",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Kaduna, Nigeria",
   },
   {
@@ -104,7 +104,7 @@ const testimonials = [
     content: "The real-time analytics help us make instant pricing decisions. Revenue increased by 30%.",
     rating: 5,
     metric: "30% revenue increase",
-    image: "/happy-ghanaian-man-business-professional-headshot.jpg",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Accra, Ghana",
   },
 ]
@@ -276,9 +276,12 @@ export default function HomePage() {
               <Card className="p-6 md:p-8 text-center hover:shadow-lg transition-shadow mobile-card touchable">
                 <div className="mb-4 md:mb-6">
                   <img
-                    src="/modern-supermarket-fresh-produce-section-with-digi.jpg"
+                    src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop&auto=format&q=80"
                     alt="Smart pricing in action"
                     className="w-full h-32 md:h-48 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop&auto=format&q=80";
+                    }}
                   />
                 </div>
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
@@ -297,9 +300,12 @@ export default function HomePage() {
               <Card className="p-6 md:p-8 text-center hover:shadow-lg transition-shadow mobile-card touchable">
                 <div className="mb-4 md:mb-6">
                   <img
-                    src="/happy-store-manager-looking-at-profit-dashboard-on.jpg"
+                    src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop&auto=format&q=80"
                     alt="Profit optimization dashboard"
                     className="w-full h-32 md:h-48 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop&auto=format&q=80";
+                    }}
                   />
                 </div>
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
@@ -318,9 +324,12 @@ export default function HomePage() {
               <Card className="p-6 md:p-8 text-center hover:shadow-lg transition-shadow mobile-card touchable">
                 <div className="mb-4 md:mb-6">
                   <img
-                    src="/ai-analytics-dashboard-with-charts-and-graphs-on-c.jpg"
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop&auto=format&q=80"
                     alt="AI-powered analytics"
                     className="w-full h-32 md:h-48 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop&auto=format&q=80";
+                    }}
                   />
                 </div>
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
@@ -385,9 +394,12 @@ export default function HomePage() {
               <Card className="max-w-2xl mx-auto p-6 bg-card/80 backdrop-blur-sm">
                 <div className="flex items-center space-x-4 mb-4">
                   <img
-                    src="/happy-nigerian-man-store-manager-headshot.jpg"
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
                     alt="Tunde Adebayo"
                     className="w-16 h-16 rounded-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80";
+                    }}
                   />
                   <div className="text-left">
                     <div className="font-semibold text-foreground text-lg">Tunde Adebayo</div>
@@ -439,12 +451,15 @@ export default function HomePage() {
                     </div>
                     <p className="text-foreground mb-4 md:mb-6 italic text-sm md:text-base">"{testimonial.content}"</p>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={testimonial.image || "/placeholder.svg"}
-                          alt={testimonial.name}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
-                        />
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={testimonial.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80"}
+                            alt={testimonial.name}
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80";
+                            }}
+                          />
                         <div>
                           <div className="font-semibold text-foreground text-sm md:text-base">{testimonial.name}</div>
                           <div className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</div>

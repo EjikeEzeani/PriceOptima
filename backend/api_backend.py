@@ -39,6 +39,8 @@ DEFAULT_CORS_ORIGINS = [
     "https://priceoptima-2-0-git-develop-ejikeezeani.vercel.app",  # Vercel branch domain
     "https://priceoptima-frontend.onrender.com",  # Render frontend domain
     "https://priceoptima-git-main-ezeaniejike-1932s-projects.vercel.app",  # Current Vercel domain
+    "https://price-optima-git-main-ezeaniejike-1932s-projects.vercel.app",  # Alternative Vercel domain
+    "https://price-optima-b7szfkr38-ezeaniejike-1932s-projects.vercel.app",  # Vercel preview domain
 ]
 
 # Additional origins via env, comma-separated (e.g., https://app.example.com,https://www.example.com)

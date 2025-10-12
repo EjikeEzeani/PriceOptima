@@ -14,11 +14,11 @@ const API_BASE_URL = (() => {
   
   // In browser (client-side), use direct backend URL in development, direct URL in production
   if (typeof window !== 'undefined') {
-    return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://priceoptima-backend.onrender.com';
+    return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8001' : 'https://priceoptima.onrender.com';
   }
   
   // Server-side rendering fallback
-  return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://priceoptima-backend.onrender.com';
+  return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8001' : 'https://priceoptima.onrender.com';
 })();
 
 export interface UploadResponse {

@@ -26,10 +26,10 @@ A comprehensive AI-powered dynamic pricing analytics platform built with Next.js
 pip install -r requirements.txt
 
 # Start the backend server
-python -m uvicorn backend.api_backend:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn backend.api_backend:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-The backend will be available at `http://127.0.0.1:8000`
+The backend will be available at `http://127.0.0.1:8001`
 
 #### 2. Frontend Setup
 ```bash
@@ -48,7 +48,7 @@ The frontend will be available at `http://localhost:3000`
 #### 3. Environment Configuration
 Create `.env.local` in the root directory:
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001
 ```
 
 **Important**: Restart the Next.js server after changing `.env.local`:
@@ -73,7 +73,7 @@ pytest tests/backend/test_upload.py -v
 chmod +x tests/integration/upload_smoke.sh
 
 # Run integration test
-API_BASE_URL=http://127.0.0.1:8000 ./tests/integration/upload_smoke.sh
+API_BASE_URL=http://127.0.0.1:8001 ./tests/integration/upload_smoke.sh
 ```
 
 ## Deployment
@@ -106,7 +106,7 @@ API_BASE_URL=http://127.0.0.1:8000 ./tests/integration/upload_smoke.sh
 ### Common Issues
 
 #### "Failed to fetch" Error
-- ✅ Check backend is running: `curl http://127.0.0.1:8000/health`
+- ✅ Check backend is running: `curl http://127.0.0.1:8001/health`
 - ✅ Verify environment variable: `NEXT_PUBLIC_API_BASE_URL`
 - ✅ Check CORS configuration in backend
 - ✅ Restart Next.js after changing `.env.local`

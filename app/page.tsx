@@ -54,7 +54,7 @@ const testimonials = [
       "Reduced food waste by 35% and increased profits by 22% in just 3 months. The AI recommendations are spot-on!",
     rating: 5,
     metric: "35% waste reduction",
-    image: getTestimonialImage('adebayo-ogundimu'),
+    image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Lagos, Nigeria",
   },
   {
@@ -65,7 +65,7 @@ const testimonials = [
       "The dynamic pricing helped us optimize inventory turnover across 50 stores. We're seeing 18% better margins.",
     rating: 5,
     metric: "18% margin improvement",
-    image: getTestimonialImage('chioma-okwu'),
+    image: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Port Harcourt, Nigeria",
   },
   {
@@ -75,7 +75,7 @@ const testimonials = [
     content: "Easy to use and incredibly powerful. Our team adopted it quickly and results were immediate.",
     rating: 5,
     metric: "Immediate ROI",
-    image: getTestimonialImage('grace-okafor'),
+    image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Abuja, Nigeria",
   },
   {
@@ -85,7 +85,7 @@ const testimonials = [
     content: "PriceOptima transformed our pricing strategy. Customer satisfaction up 25% while profits increased.",
     rating: 5,
     metric: "25% satisfaction boost",
-    image: getTestimonialImage('emeka-nwosu'),
+    image: "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Kano, Nigeria",
   },
   {
@@ -95,7 +95,7 @@ const testimonials = [
     content: "The waste reduction alone saved us ₦2M annually. Best investment we've made for our business.",
     rating: 5,
     metric: "₦2M saved annually",
-    image: getTestimonialImage('amina-hassan'),
+    image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Kaduna, Nigeria",
   },
   {
@@ -105,7 +105,7 @@ const testimonials = [
     content: "The real-time analytics help us make instant pricing decisions. Revenue increased by 30%.",
     rating: 5,
     metric: "30% revenue increase",
-    image: getTestimonialImage('kwame-asante'),
+    image: "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Kumasi, Ghana",
   },
 ]

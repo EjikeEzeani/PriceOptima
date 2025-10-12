@@ -166,12 +166,12 @@ API_BASE_URL=http://127.0.0.1:8000 ./tests/integration/upload_smoke.sh
 ## Data Requirements
 
 ### Required Columns
-- Date
-- Product Name
-- Category
-- Price
-- Quantity Sold
-- Revenue
+- Date (or Date_Time, DateTime)
+- Product Name (or Product, Product_Name)
+- Category (or Cat, Product_Category)
+- Price (or Unit_Price, Unit Price)
+- Quantity Sold (or Quantity, Quantity_Sold, Qty, Qty Sold)
+- Revenue (or Total_Revenue, Total Revenue, Sales)
 
 ### Optional Columns
 - Waste Amount

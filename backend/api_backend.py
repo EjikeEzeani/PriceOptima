@@ -850,17 +850,44 @@ async def upload_data(file: UploadFile = File(...)):
             logger.info("Parsing CSV file...")
             df = pd.read_csv(tmp_path, low_memory=False)
             
-            # Basic validation of required columns
+            # Basic validation of required columns with flexible naming
             required_columns = {"Date", "Product Name", "Category", "Price", "Quantity Sold", "Revenue"}
             available_columns = set(df.columns)
-            missing_columns = required_columns - available_columns
+            
+            # Create column mapping for common variations
+            column_mapping = {}
+            for col in df.columns:
+                col_lower = col.lower().strip()
+                if col_lower in ['product', 'product name', 'product_name']:
+                    column_mapping['Product Name'] = col
+                elif col_lower in ['quantity', 'quantity sold', 'quantity_sold', 'qty', 'qty sold']:
+                    column_mapping['Quantity Sold'] = col
+                elif col_lower in ['date', 'date_time', 'datetime']:
+                    column_mapping['Date'] = col
+                elif col_lower in ['category', 'cat', 'product_category']:
+                    column_mapping['Category'] = col
+                elif col_lower in ['price', 'unit_price', 'unit price']:
+                    column_mapping['Price'] = col
+                elif col_lower in ['revenue', 'total_revenue', 'total revenue', 'sales']:
+                    column_mapping['Revenue'] = col
+            
+            # Check if we have all required columns (either exact match or mapped)
+            missing_columns = []
+            for required in required_columns:
+                if required not in available_columns and required not in column_mapping:
+                    missing_columns.append(required)
             
             if missing_columns:
                 logger.warning(f"Missing required columns: {missing_columns}")
                 raise HTTPException(
                     status_code=422, 
-                    detail=f"Missing required columns: {', '.join(missing_columns)}. Available columns: {', '.join(available_columns)}"
+                    detail=f"Missing required columns: {', '.join(missing_columns)}. Available columns: {', '.join(available_columns)}. Supported variations: Product/Product Name, Quantity/Quantity Sold, Date, Category, Price, Revenue/Sales"
                 )
+            
+            # Rename columns to standard names if needed
+            if column_mapping:
+                df = df.rename(columns=column_mapping)
+                logger.info(f"Renamed columns: {column_mapping}")
             
             logger.info(f"CSV parsed successfully: {len(df)} rows, {len(df.columns)} columns")
             

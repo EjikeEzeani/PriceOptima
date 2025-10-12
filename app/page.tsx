@@ -33,6 +33,7 @@ import { ExportSection } from "@/components/export-section"
 import { AnalyticsDashboard } from "@/components/analytics-dashboard"
 import { DebugPanel } from "@/components/debug-panel"
 import { MobileNavigation } from "@/components/mobile-navigation"
+import { getTestimonialImage, getImageWithFallback } from "@/lib/image-manager"
 
 const tabs = [
   { id: "upload", label: "Upload Data", icon: Upload, description: "Upload your sales data files" },
@@ -53,7 +54,7 @@ const testimonials = [
       "Reduced food waste by 35% and increased profits by 22% in just 3 months. The AI recommendations are spot-on!",
     rating: 5,
     metric: "35% waste reduction",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: getTestimonialImage('adebayo-ogundimu'),
     location: "Lagos, Nigeria",
   },
   {
@@ -64,7 +65,7 @@ const testimonials = [
       "The dynamic pricing helped us optimize inventory turnover across 50 stores. We're seeing 18% better margins.",
     rating: 5,
     metric: "18% margin improvement",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: getTestimonialImage('chioma-okwu'),
     location: "Port Harcourt, Nigeria",
   },
   {
@@ -74,7 +75,7 @@ const testimonials = [
     content: "Easy to use and incredibly powerful. Our team adopted it quickly and results were immediate.",
     rating: 5,
     metric: "Immediate ROI",
-    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: getTestimonialImage('grace-okafor'),
     location: "Abuja, Nigeria",
   },
   {
@@ -84,7 +85,7 @@ const testimonials = [
     content: "PriceOptima transformed our pricing strategy. Customer satisfaction up 25% while profits increased.",
     rating: 5,
     metric: "25% satisfaction boost",
-    image: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: getTestimonialImage('emeka-nwosu'),
     location: "Kano, Nigeria",
   },
   {
@@ -94,7 +95,7 @@ const testimonials = [
     content: "The waste reduction alone saved us ₦2M annually. Best investment we've made for our business.",
     rating: 5,
     metric: "₦2M saved annually",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: getTestimonialImage('amina-hassan'),
     location: "Kaduna, Nigeria",
   },
   {
@@ -104,7 +105,7 @@ const testimonials = [
     content: "The real-time analytics help us make instant pricing decisions. Revenue increased by 30%.",
     rating: 5,
     metric: "30% revenue increase",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: getTestimonialImage('kwame-asante'),
     location: "Kumasi, Ghana",
   },
 ]

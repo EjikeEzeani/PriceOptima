@@ -64,7 +64,7 @@ const testimonials = [
       "The dynamic pricing helped us optimize inventory turnover across 50 stores. We're seeing 18% better margins.",
     rating: 5,
     metric: "18% margin improvement",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Port Harcourt, Nigeria",
   },
   {
@@ -74,7 +74,7 @@ const testimonials = [
     content: "Easy to use and incredibly powerful. Our team adopted it quickly and results were immediate.",
     rating: 5,
     metric: "Immediate ROI",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     location: "Abuja, Nigeria",
   },
   {
@@ -105,7 +105,7 @@ const testimonials = [
     rating: 5,
     metric: "30% revenue increase",
     image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
-    location: "Accra, Ghana",
+    location: "Kumasi, Ghana",
   },
 ]
 
@@ -394,11 +394,11 @@ export default function HomePage() {
               <Card className="max-w-2xl mx-auto p-6 bg-card/80 backdrop-blur-sm">
                 <div className="flex items-center space-x-4 mb-4">
                   <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80"
                     alt="Tunde Adebayo"
                     className="w-16 h-16 rounded-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80";
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80";
                     }}
                   />
                   <div className="text-left">

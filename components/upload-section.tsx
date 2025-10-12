@@ -123,56 +123,61 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-foreground mb-2">Upload Sales Data</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+    <div className="space-y-4 md:space-y-6">
+      <div className="text-center px-4 md:px-0">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Upload Sales Data</h2>
+        <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
           Upload your supermarket sales data in CSV format. The system will analyze your data to generate optimal
           pricing strategies that reduce waste and increase profitability.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Upload Area */}
-        <Card className="gradient-bg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Upload className="h-5 w-5 text-primary" />
+        <Card className="gradient-bg mobile-card">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+              <Upload className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               <span>Data Upload</span>
             </CardTitle>
-            <CardDescription>Drag and drop your sales data files or click to browse</CardDescription>
+            <CardDescription className="text-sm md:text-base">Drag and drop your sales data files or click to browse</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-lg p-6 md:p-8 text-center cursor-pointer transition-colors touchable ${
                 isDragActive ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
               }`}
             >
               <input {...getInputProps()} />
-              <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <Upload className="h-8 w-8 md:h-12 md:w-12 text-muted-foreground mx-auto mb-3 md:mb-4" />
               {isDragActive ? (
-                <p className="text-primary font-medium">Drop the files here...</p>
+                <p className="text-primary font-medium text-sm md:text-base">Drop the files here...</p>
               ) : (
                 <div>
-                  <p className="text-foreground font-medium mb-2">Drop sales data files here, or click to select</p>
-                  <p className="text-sm text-muted-foreground">Supports CSV files up to 50MB each</p>
+                  <p className="text-foreground font-medium mb-2 text-sm md:text-base">Drop sales data files here, or click to select</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Supports CSV files up to 50MB each</p>
                 </div>
               )}
             </div>
 
             {uploadedFiles.length > 0 && (
               <div className="mt-4 space-y-2">
-                <h4 className="font-medium text-foreground">Uploaded Files:</h4>
+                <h4 className="font-medium text-foreground text-sm md:text-base">Uploaded Files:</h4>
                 {uploadedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between bg-accent/50 rounded-lg p-3">
-                    <div className="flex items-center space-x-2">
-                      <FileText className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">{file.name}</span>
-                      <span className="text-xs text-muted-foreground">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                  <div key={index} className="flex items-center justify-between bg-accent/50 rounded-lg p-2 md:p-3">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                      <FileText className="h-3 w-3 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                      <span className="text-xs md:text-sm font-medium truncate">{file.name}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => removeFile(index)} className="h-8 w-8 p-0">
-                      <X className="h-4 w-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => removeFile(index)} 
+                      className="h-6 w-6 md:h-8 md:w-8 p-0 touchable flex-shrink-0"
+                    >
+                      <X className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                   </div>
                 ))}
@@ -180,7 +185,11 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
             )}
 
             {uploadedFiles.length > 0 && (
-              <Button onClick={processFiles} disabled={isProcessing} className="w-full mt-4">
+              <Button 
+                onClick={processFiles} 
+                disabled={isProcessing} 
+                className="w-full mt-4 mobile-btn-base touchable"
+              >
                 {isProcessing ? "Processing..." : "Process Files"}
               </Button>
             )}
@@ -188,28 +197,28 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
             {isProcessing && (
               <div className="mt-4">
                 <Progress value={uploadProgress} className="w-full" />
-                <p className="text-sm text-muted-foreground mt-2 text-center">Processing files... {uploadProgress}%</p>
+                <p className="text-xs md:text-sm text-muted-foreground mt-2 text-center">Processing files... {uploadProgress}%</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Requirements & Guidelines */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Info className="h-5 w-5 text-primary" />
+        <Card className="mobile-card">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+              <Info className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               <span>Data Requirements</span>
             </CardTitle>
-            <CardDescription>Ensure your data meets these requirements for optimal analysis</CardDescription>
+            <CardDescription className="text-sm md:text-base">Ensure your data meets these requirements for optimal analysis</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-foreground">Required Columns</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground text-sm md:text-base">Required Columns</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     Date, Product Name, Category, Price, Quantity Sold, Revenue
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">Optional: Waste Amount, Cost, Supplier</p>
@@ -217,35 +226,35 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
               </div>
 
               <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-foreground">Date Format</p>
-                  <p className="text-sm text-muted-foreground">YYYY-MM-DD, DD/MM/YYYY, or MM/DD/YYYY</p>
+                  <p className="font-medium text-foreground text-sm md:text-base">Date Format</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">YYYY-MM-DD, DD/MM/YYYY, or MM/DD/YYYY</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-foreground">Data Quality</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground text-sm md:text-base">Data Quality</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     Clean data with minimal missing values for best results
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-foreground">File Format</p>
-                  <p className="text-sm text-muted-foreground">CSV format preferred, maximum 50MB per file</p>
+                  <p className="font-medium text-foreground text-sm md:text-base">File Format</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">CSV format preferred, maximum 50MB per file</p>
                 </div>
               </div>
             </div>
 
             <div className="pt-4 border-t border-border">
-              <h4 className="font-medium text-foreground mb-2">Sample Data Structure</h4>
-              <div className="bg-muted/50 rounded-lg p-3 text-xs font-mono overflow-x-auto">
+              <h4 className="font-medium text-foreground mb-2 text-sm md:text-base">Sample Data Structure</h4>
+              <div className="bg-muted/50 rounded-lg p-2 md:p-3 text-xs font-mono overflow-x-auto mobile-table-container">
                 <div className="text-muted-foreground whitespace-nowrap">
                   Date,Product,Category,Price,Quantity,Revenue
                 </div>
@@ -261,44 +270,44 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
 
       {/* Data Preview */}
       {dataPreview && (
-        <Card className="gradient-bg">
-          <CardHeader>
-            <CardTitle>Data Preview & Summary</CardTitle>
-            <CardDescription>Overview of your uploaded data</CardDescription>
+        <Card className="gradient-bg mobile-card">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-lg md:text-xl">Data Preview & Summary</CardTitle>
+            <CardDescription className="text-sm md:text-base">Overview of your uploaded data</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 metric-card-1 rounded-lg">
-                <p className="metric-value high-contrast-text">{dataPreview.summary?.totalRecords?.toLocaleString() || '0'}</p>
-                <p className="metric-label high-contrast-label">Total Records</p>
+          <CardContent className="p-4 md:p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6 mobile-metrics">
+              <div className="text-center p-3 md:p-4 metric-card-1 rounded-lg mobile-metric-card">
+                <p className="metric-value high-contrast-text text-lg md:text-2xl">{dataPreview.summary?.totalRecords?.toLocaleString() || '0'}</p>
+                <p className="metric-label high-contrast-label text-xs md:text-sm">Total Records</p>
               </div>
-              <div className="text-center p-4 metric-card-2 rounded-lg">
-                <p className="metric-value high-contrast-text">{dataPreview.summary?.products || '0'}</p>
-                <p className="metric-label high-contrast-label">Unique Products</p>
+              <div className="text-center p-3 md:p-4 metric-card-2 rounded-lg mobile-metric-card">
+                <p className="metric-value high-contrast-text text-lg md:text-2xl">{dataPreview.summary?.products || '0'}</p>
+                <p className="metric-label high-contrast-label text-xs md:text-sm">Unique Products</p>
               </div>
-              <div className="text-center p-4 metric-card-3 rounded-lg">
-                <p className="metric-value high-contrast-text">{dataPreview.summary?.categories || '0'}</p>
-                <p className="metric-label high-contrast-label">Categories</p>
+              <div className="text-center p-3 md:p-4 metric-card-3 rounded-lg mobile-metric-card">
+                <p className="metric-value high-contrast-text text-lg md:text-2xl">{dataPreview.summary?.categories || '0'}</p>
+                <p className="metric-label high-contrast-label text-xs md:text-sm">Categories</p>
               </div>
-              <div className="text-center p-4 metric-card-4 rounded-lg">
-                <p className="metric-value high-contrast-text analytics-text">₦{dataPreview.summary?.totalRevenue?.toLocaleString() || '0'}</p>
-                <p className="metric-label high-contrast-label">Total Revenue</p>
+              <div className="text-center p-3 md:p-4 metric-card-4 rounded-lg mobile-metric-card">
+                <p className="metric-value high-contrast-text analytics-text text-lg md:text-2xl">₦{dataPreview.summary?.totalRevenue?.toLocaleString() || '0'}</p>
+                <p className="metric-label high-contrast-label text-xs md:text-sm">Total Revenue</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-foreground">Sample Data (First 5 Rows):</h4>
+                <h4 className="font-medium text-foreground text-sm md:text-base">Sample Data (First 5 Rows):</h4>
                 <Badge variant="secondary" className="text-xs">
                   {dataPreview.totalRows || dataPreview.preview?.length || 0} total records
                 </Badge>
               </div>
-              <div className="overflow-x-auto border border-border rounded-lg">
-                <table className="data-preview-table w-full">
+              <div className="overflow-x-auto border border-border rounded-lg mobile-table-container">
+                <table className="data-preview-table w-full mobile-table">
                   <thead>
                     <tr>
                       {(dataPreview.headers || []).slice(0, 6).map((header: string, index: number) => (
-                        <th key={index} className="text-left p-3">
+                        <th key={index} className="text-left p-2 md:p-3 text-xs md:text-sm">
                           {header}
                         </th>
                       ))}
@@ -311,7 +320,7 @@ export function UploadSection({ onDataUploaded }: UploadSectionProps) {
                           {(dataPreview.headers || []).slice(0, 6).map((header: string, cellIndex: number) => {
                             const value = row?.[header];
                             return (
-                              <td key={cellIndex} className="analytics-text">
+                              <td key={cellIndex} className="analytics-text p-2 md:p-3 text-xs md:text-sm">
                                 {(() => {
                                   if (value === null || value === undefined) return "N/A";
                                   if (typeof value === 'object') return JSON.stringify(value);

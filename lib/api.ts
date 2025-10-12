@@ -12,9 +12,9 @@ const API_BASE_URL = (() => {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   
-  // In browser (client-side), use /api proxy in development, direct URL in production
+  // In browser (client-side), use direct backend URL in development, direct URL in production
   if (typeof window !== 'undefined') {
-    return process.env.NODE_ENV === 'development' ? '/api' : 'https://priceoptima.onrender.com';
+    return process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://priceoptima.onrender.com';
   }
   
   // Server-side rendering fallback
@@ -134,24 +134,46 @@ class APIClient {
       },
     };
 
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || 
-          errorData.detail || 
-          `HTTP ${response.status}: ${response.statusText}`
-        );
-      }
+    // Retry logic for failed requests
+    const maxRetries = 3;
+    let lastError: Error | null = null;
 
-      // EDA may return numeric arrays; always parse JSON
-      return await response.json();
-    } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
-      throw error;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`API request attempt ${attempt}/${maxRetries} to ${url}`);
+        const response = await fetch(url, config);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || 
+            errorData.detail || 
+            `HTTP ${response.status}: ${response.statusText}`
+          );
+        }
+
+        // EDA may return numeric arrays; always parse JSON
+        const result = await response.json();
+        console.log(`API request successful to ${url}`);
+        return result;
+      } catch (error) {
+        lastError = error as Error;
+        console.error(`API request attempt ${attempt}/${maxRetries} failed for ${url}:`, error);
+        
+        // If this is the last attempt, throw the error
+        if (attempt === maxRetries) {
+          break;
+        }
+        
+        // Wait before retrying (exponential backoff)
+        const delay = Math.pow(2, attempt - 1) * 1000;
+        console.log(`Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
+
+    // If all retries failed, throw the last error
+    throw lastError || new Error(`API request failed after ${maxRetries} attempts`);
   }
 
   // Upload data (with fallbacks for alternate backends)
@@ -257,12 +279,27 @@ class APIClient {
     return response.blob();
   }
 
-  // Health Check
+  // Health Check with detailed logging
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseURL}/health`);
-      return response.ok;
-    } catch {
+      console.log(`Health check: Testing connection to ${this.baseURL}/health`);
+      const response = await fetch(`${this.baseURL}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Health check successful:', data);
+        return true;
+      } else {
+        console.error(`Health check failed: HTTP ${response.status} ${response.statusText}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Health check error:', error);
       return false;
     }
   }

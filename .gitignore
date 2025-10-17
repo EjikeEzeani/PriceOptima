@@ -67,3 +67,13 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Large dataset files (exceed GitHub 100MB limit)
+DATASET/raw/nga-rainfall-subnat-full.csv
+DATASET/raw/API_PA.NUS.FCRF_DS2_en_csv_v2_886153.csv
+DATASET/raw/wfp_food_prices.csv
+DATASET/raw/wfp_food_prices_nga.csv
+DATASET/raw/derived_data/harmonized_prices.parquet
+DATASET/processed/*.csv
+DATASET/processed/*.parquet
+DATASET/processed/reports/

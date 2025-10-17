@@ -1,0 +1,64 @@
+{
+  "dataset_processing": {
+    "directories": {
+      "raw_data": "DATASET/raw",
+      "processed_data": "DATASET/processed",
+      "reports": "DATASET/processed/reports",
+      "models": "models"
+    },
+    "file_formats": {
+      "supported_extensions": [".csv", ".parquet", ".xlsx", ".xls"],
+      "preferred_output_format": "csv"
+    },
+    "processing_limits": {
+      "max_file_size_mb": 100,
+      "min_rows": 10,
+      "max_missing_percentage": 0.5
+    },
+    "column_mapping": {
+      "required_columns": {
+        "Date": ["date", "datetime", "timestamp", "time"],
+        "Product": ["product", "product name", "product_name", "item", "item name", "product_id"],
+        "Category": ["category", "type", "product_category", "cat"],
+        "Price": ["price", "unit price", "unit_price", "cost_per_unit", "selling_price"],
+        "Quantity": ["quantity", "quantity sold", "qty", "qty sold", "units", "volume"],
+        "Revenue": ["revenue", "sales", "total", "total revenue", "total_sales", "sales_amount"]
+      },
+      "optional_columns": {
+        "Waste": ["waste", "waste amount", "waste_amount", "spoilage", "loss"],
+        "Cost": ["cost", "unit cost", "unit_cost", "purchase_cost", "cost_price"],
+        "Supplier": ["supplier", "vendor", "supplier_name", "source"],
+        "Location": ["location", "store", "branch", "outlet", "region"],
+        "Season": ["season", "period", "quarter", "month_name"]
+      }
+    },
+    "data_quality": {
+      "date_formats": [
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%m/%d/%Y",
+        "%Y-%m-%d %H:%M:%S",
+        "%d-%m-%Y",
+        "%m-%d-%Y",
+        "%Y/%m/%d"
+      ],
+      "missing_value_strategies": {
+        "numeric": "fill_with_zero",
+        "categorical": "fill_with_unknown",
+        "date": "keep_as_is"
+      }
+    },
+    "feature_engineering": {
+      "add_date_features": true,
+      "compute_revenue": true,
+      "remove_duplicates": true,
+      "add_derived_features": true
+    },
+    "output_settings": {
+      "save_quality_report": true,
+      "save_processing_log": true,
+      "include_original_columns": false,
+      "timestamp_output_files": true
+    }
+  }
+}

@@ -182,38 +182,38 @@ def preprocess_data():
             
             # Basic preprocessing
             df_processed = df.copy()
-        
-        # Handle date column
-        if 'date' in df_processed.columns:
-            df_processed['date'] = pd.to_datetime(df_processed['date'], errors='coerce')
-            df_processed['year'] = df_processed['date'].dt.year
-            df_processed['month'] = df_processed['date'].dt.month
-            df_processed['day'] = df_processed['date'].dt.day
-            df_processed['dayofweek'] = df_processed['date'].dt.dayofweek
-        
-        # Handle missing values
-        numeric_columns = df_processed.select_dtypes(include=[np.number]).columns
-        df_processed[numeric_columns] = df_processed[numeric_columns].fillna(0)
-        
-        # Handle categorical columns
-        categorical_columns = df_processed.select_dtypes(include=['object']).columns
-        for col in categorical_columns:
-            if col != 'date':
-                df_processed[col] = df_processed[col].fillna('Unknown')
-        
-        # Save processed data
-        output_path = "data/processed/processed_dataset.csv"
-        df_processed.to_csv(output_path, index=False)
-        
-        print(f"✅ Preprocessing complete → {output_path}")
-        print(f"   📊 Processed records: {len(df_processed):,}")
-        print(f"   📋 New columns: {len(df_processed.columns)}")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error during preprocessing: {e}")
-        return False
+            
+            # Handle date column
+            if 'date' in df_processed.columns:
+                df_processed['date'] = pd.to_datetime(df_processed['date'], errors='coerce')
+                df_processed['year'] = df_processed['date'].dt.year
+                df_processed['month'] = df_processed['date'].dt.month
+                df_processed['day'] = df_processed['date'].dt.day
+                df_processed['dayofweek'] = df_processed['date'].dt.dayofweek
+            
+            # Handle missing values
+            numeric_columns = df_processed.select_dtypes(include=[np.number]).columns
+            df_processed[numeric_columns] = df_processed[numeric_columns].fillna(0)
+            
+            # Handle categorical columns
+            categorical_columns = df_processed.select_dtypes(include=['object']).columns
+            for col in categorical_columns:
+                if col != 'date':
+                    df_processed[col] = df_processed[col].fillna('Unknown')
+            
+            # Save processed data
+            output_path = "data/processed/processed_dataset.csv"
+            df_processed.to_csv(output_path, index=False)
+            
+            print(f"✅ Preprocessing complete → {output_path}")
+            print(f"   📊 Processed records: {len(df_processed):,}")
+            print(f"   📋 New columns: {len(df_processed.columns)}")
+            
+            return True
+            
+        except Exception as e2:
+            print(f"❌ Basic preprocessing also failed: {e2}")
+            return False
 
 def train_models():
     """Train ML and RL models"""

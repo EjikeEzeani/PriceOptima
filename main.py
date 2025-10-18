@@ -151,21 +151,37 @@ def create_dummy_dataset():
     print(f"   📊 Records: {len(dummy_df):,}")
 
 def preprocess_data():
-    """Preprocess the merged dataset"""
+    """Preprocess the merged dataset using comprehensive pipeline"""
     print("🔄 Preprocessing dataset...")
     
     try:
-        # Load merged data
-        input_path = "data/processed/merged_input_dataset.csv"
-        if not os.path.exists(input_path):
-            print("   ❌ Merged dataset not found. Please run 'Merge Data' first.")
-            return False
+        # Use comprehensive preprocessing pipeline
+        from comprehensive_preprocessing import ComprehensivePreprocessor
+        preprocessor = ComprehensivePreprocessor()
+        merged_df, train_df, val_df, test_df = preprocessor.run_complete_pipeline()
         
-        df = pd.read_csv(input_path)
-        print(f"   📊 Loading data: {len(df)} rows, {len(df.columns)} columns")
+        print("✅ Comprehensive preprocessing complete")
+        print(f"   • Processed {len(merged_df):,} total rows")
+        print(f"   • Created train/val/test splits")
+        print(f"   • Generated {len(merged_df.columns)} features")
+        return True
         
-        # Basic preprocessing
-        df_processed = df.copy()
+    except Exception as e:
+        print(f"❌ Comprehensive preprocessing failed: {e}")
+        print("   Falling back to basic preprocessing...")
+        
+        try:
+            # Fallback to basic preprocessing
+            input_path = "data/processed/merged_input_dataset.csv"
+            if not os.path.exists(input_path):
+                print("   ❌ Merged dataset not found. Please run 'Merge Data' first.")
+                return False
+            
+            df = pd.read_csv(input_path)
+            print(f"   📊 Loading data: {len(df)} rows, {len(df.columns)} columns")
+            
+            # Basic preprocessing
+            df_processed = df.copy()
         
         # Handle date column
         if 'date' in df_processed.columns:
